@@ -1,7 +1,4 @@
-from pyasmjit import Assembler
-
-
-
+import pyasmjit
 
 def parse_hlc_code(hlc_code):
     variables = {}
