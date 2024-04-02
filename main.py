@@ -1,5 +1,4 @@
 import ctypes
-from pyasmjit import Assembler
 import sys
 
 
@@ -41,6 +40,7 @@ def parse_hlc_code(hlc_code):
     while_count = 0
     relational_operators = {'<', '<=', '>', '>=', '==', '!='}
     variable = {}
+    memory = [0] * 1024  # 1kB byte-addressable memory
     for line in hlc_code.split('\n'):
         line = line.strip()
         if not line:
