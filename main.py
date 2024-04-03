@@ -213,6 +213,12 @@ def parse_hlc_code(hlc_code):
                     elif len(right_side) == 3:
                         right_type_1 = variable.get(right_side[0])
                         right_type_2 = variable.get(right_side[2])
+                        if not (right_type_1.isnumeric() or right_type_1.isidentifier()):
+                            print(f"Error: The formular is incorrect!")
+                            sys.exit()
+                        if not (right_type_2.isnumeric() or right_type_2.isidentifier()):
+                            print(f"Error: The formular is incorrect!")
+                            sys.exit()
                         if right_side[1] not in operators:
                             print(f"Error: The formular is incorrect!")
                             sys.exit()
@@ -228,6 +234,15 @@ def parse_hlc_code(hlc_code):
                         right_type_1 = variable.get(right_side[0])
                         right_type_2 = variable.get(right_side[2])
                         right_type_3 = variable.get(right_side[4])
+                        if not (right_type_1.isnumeric() or right_type_1.isidentifier()):
+                            print(f"Error: The formular is incorrect!")
+                            sys.exit()
+                        if not (right_type_2.isnumeric() or right_type_2.isidentifier()):
+                            print(f"Error: The formular is incorrect!")
+                            sys.exit()
+                        if not (right_type_3.isnumeric() or right_type_3.isidentifier()):
+                            print(f"Error: The formular is incorrect!")
+                            sys.exit()
                         if right_side[1] not in operators or right_side[3] not in operators:
                             print(f"Error: The formular is incorrect!")
                             sys.exit()
