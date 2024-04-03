@@ -1,9 +1,8 @@
 import ctypes
 import sys
 
-
-# 给定的高级语言代码
-hlc_code = """
+# High Level Code
+hlc = """
 unsigned a b c
 signed x y z
 a = 3
@@ -28,20 +27,22 @@ while y > 0
     y = y - 1 
 """
 
+# Define an array with unsigned elements
+unsigned_array = {'a': ctypes.c_uint8(0), 'b': ctypes.c_uint8(0), 'c': ctypes.c_uint8(0)}
+# Define an array with signed elements
+signed_array = {'x': ctypes.c_int8(0), 'y': ctypes.c_int8(0), 'z': ctypes.c_int8(0)}
+# Define an array with 8-bit wide registers
+registers = {'eax': ctypes.c_int8(0), 'ebx': ctypes.c_int8(0), 'ecx': ctypes.c_int8(0), 'edx': ctypes.c_int8(0)}
+if_count = 0
+while_count = 0
+relational_operators = {'<', '<=', '>', '>=', '==', '!='}
+operators = ['+', '-', '*', '/']
+variable = {}
+memory = [0] * 1024  # 1kB byte-addressable memory
 
-def parse_hlc_code(hlc_code):
-    # Define an array with unsigned elements
-    unsigned_array = {'a': ctypes.c_uint8(0), 'b': ctypes.c_uint8(0), 'c': ctypes.c_uint8(0)}
-    # Define an array with signed elements
-    signed_array = {'x': ctypes.c_int8(0), 'y': ctypes.c_int8(0), 'z': ctypes.c_int8(0)}
-    # Define an array with 8-bit wide registers
-    registers = {'eax': ctypes.c_int8(0), 'ebx': ctypes.c_int8(0), 'ecx': ctypes.c_int8(0), 'edx': ctypes.c_int8(0)}
-    if_count = 0
-    while_count = 0
-    relational_operators = {'<', '<=', '>', '>=', '==', '!='}
-    variable = {}
-    memory = [0] * 1024  # 1kB byte-addressable memory
-    for line in hlc_code.split('\n'):
+
+def parse_hlc_code(hlc):
+    for line in hlc.split('\n'):
         line = line.strip()
         if not line:
             continue
@@ -95,9 +96,8 @@ def parse_hlc_code(hlc_code):
         print("Instructions:", instructions)
     return variable, instructions
 
+
 def check_formula(expr):
-    # 检查公式中运算符数量是否超过2个
-    operators = ['+', '-', '*', '/']
     operator_count = sum(expr.count(op) for op in operators)
     if operator_count > 2:
         print("Error: The formula has more than 2 operators.")
