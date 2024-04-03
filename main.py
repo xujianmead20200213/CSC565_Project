@@ -277,8 +277,6 @@ def check_formula(expr):
 def generate_assembly_code(action, instruction):
     if action == 'vrmov':
         memory.append("10" + "eax")
-
-
     elif action == 'vmmov':
         return '11'
     elif action == 'rmmov':
