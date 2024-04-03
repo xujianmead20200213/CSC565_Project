@@ -1,5 +1,6 @@
 import ctypes
 import sys
+import csv
 
 # High Level Code
 hlc = """
@@ -38,7 +39,7 @@ while_count = 0
 relational_operators = {'<', '<=', '>', '>=', '==', '!='}
 operators = ['+', '-', '*', '/']
 variable = {'a', 'b', 'c', 'x', 'y', 'z'}
-memory = [0] * 1024  # 1kB byte-addressable memory
+memory = [] * 1024  # 1kB byte-addressable memory
 # Define mappings for variables, registers, and flags along with their corresponding addresses
 mapping = {
     'a': '01',
@@ -116,6 +117,7 @@ convert_hlc_ymc = []
 if_else_flag = 0
 jmp_address = 0
 counter = 0
+HLC_program = []
 
 
 def check_variables(variable_code):
@@ -336,3 +338,19 @@ def generate_assembly_code(variables, instructions):
 variables, instructions = parse_hlc_code(hlc)
 machine_code = generate_assembly_code(variables, instructions)
 print('Generated Assembly Code:', machine_code)
+
+
+# Write into CSV path
+csv_file_path = 'C:/Users/DELL/Desktop/CSC565/Project/HLC-program.csv'
+with open(csv_file_path, 'w', newline='') as csvfile:
+    csv_writer = csv.writer(csvfile)
+    for row in HLC_program:
+        csv_writer.writerow(row)
+print("HLC CSV file have been created")
+
+# Write into CSV path
+memory_csv_file_path = 'C:/Users/DELL/Desktop/CSC565/Project/memory.csv'
+with open(memory_csv_file_path, 'w', newline='') as file:
+    writer = csv.writer(file)
+    writer.writerow(memory)
+print("Memory CSV file have been created")
