@@ -274,65 +274,94 @@ def check_formula(expr):
         return expr.split()
 
 
-def generate_assembly_code(variables, instructions):
-    asm = Assembler()
-    for instr_type, instr in instructions:
-        if instr_type == 'assign':
-            var, expr = instr
-            if '+' in expr:
-                operand1, operand2 = expr.split('+')
-                asm.mov('eax', variables.get(operand1.strip(), operand1.strip()))
-                asm.add('eax', variables.get(operand2.strip(), operand2.strip()))
-                asm.mov(variables[var], 'eax')
-            elif '-' in expr:
-                operand1, operand2 = expr.split('-')
-                asm.mov('eax', variables.get(operand1.strip(), operand1.strip()))
-                asm.sub('eax', variables.get(operand2.strip(), operand2.strip()))
-                asm.mov(variables[var], 'eax')
-            elif '*' in expr:
-                operand1, operand2 = expr.split('*')
-                asm.mov('eax', variables.get(operand1.strip(), operand1.strip()))
-                asm.imul('eax', variables.get(operand2.strip(), operand2.strip()))
-                asm.mov(variables[var], 'eax')
-            elif '/' in expr:
-                operand1, operand2 = expr.split('/')
-                asm.mov('eax', variables.get(operand1.strip(), operand1.strip()))
-                asm.cdq()
-                asm.idiv(variables.get(operand2.strip(), operand2.strip()))
-                asm.mov(variables[var], 'eax')
-        elif instr_type == 'control':
-            asm_label = asm.new_label()
-            if instr.startswith('if'):
-                _, condition = instr.split('if')
-                condition = condition.strip()
-                operand1, operator, operand2 = condition.split()
-                asm.mov('eax', variables.get(operand1.strip(), operand1.strip()))
-                asm.cmp('eax', variables.get(operand2.strip(), operand2.strip()))
-                if operator == '<=':
-                    asm.jle(asm_label)
-            elif instr.startswith('else'):
-                asm.jmp(asm_label)
-            elif instr.startswith('while'):
-                _, condition = instr.split('while')
-                condition = condition.strip()
-                operand1, operator, operand2 = condition.split()
-                asm_label_start = asm.new_label()
-                asm_label_end = asm.new_label()
-                asm.bind_label(asm_label_start)
-                asm.mov('eax', variables.get(operand1.strip(), operand1.strip()))
-                asm.cmp('eax', variables.get(operand2.strip(), operand2.strip()))
-                if operator == '>':
-                    asm.jle(asm_label_end)
-                elif operator == '>=':
-                    asm.jl(asm_label_end)
-                elif operator == '<':
-                    asm.jge(asm_label_end)
-                elif operator == '<=':
-                    asm.jg(asm_label_end)
-                asm.jmp(asm_label_start)
-                asm.bind_label(asm_label_end)
-            asm.bind_label(asm_label)
-    return asm.get_machine_code()
+def generate_assembly_code(action, instruction):
+    if action == 'vrmov':
+        memory.append("10" + "eax")
+
+
+    elif action == 'vmmov':
+        return '11'
+    elif action == 'rmmov':
+        return '12'
+    elif action == 'mrmov':
+        return '13'
+    elif action == 'rrmov':
+        return '14'
+    elif action == 'mmmov':
+        return '15'
+    elif action == 'cmp':
+        return '20'
+    elif action == 'iaddmul':
+        return '42'
+    elif action == 'iadddiv':
+        return '43'
+    # Add more cases as needed
+    else:
+        return 'Unknown action'
+    memory.append(instruction)
+    eax = unsigned_array.get("a")
+
+
+assembly_code = generate_assembly_code("mov", "right_side")
+#
+# def generate_assembly_code(action):
+#     for instr_type, instr in instructions:
+#         if instr_type == 'assign':
+#             var, expr = instr
+#             if '+' in expr:
+#                 operand1, operand2 = expr.split('+')
+#                 asm.mov('eax', variables.get(operand1.strip(), operand1.strip()))
+#                 asm.add('eax', variables.get(operand2.strip(), operand2.strip()))
+#                 asm.mov(variables[var], 'eax')
+#             elif '-' in expr:
+#                 operand1, operand2 = expr.split('-')
+#                 asm.mov('eax', variables.get(operand1.strip(), operand1.strip()))
+#                 asm.sub('eax', variables.get(operand2.strip(), operand2.strip()))
+#                 asm.mov(variables[var], 'eax')
+#             elif '*' in expr:
+#                 operand1, operand2 = expr.split('*')
+#                 asm.mov('eax', variables.get(operand1.strip(), operand1.strip()))
+#                 asm.imul('eax', variables.get(operand2.strip(), operand2.strip()))
+#                 asm.mov(variables[var], 'eax')
+#             elif '/' in expr:
+#                 operand1, operand2 = expr.split('/')
+#                 asm.mov('eax', variables.get(operand1.strip(), operand1.strip()))
+#                 asm.cdq()
+#                 asm.idiv(variables.get(operand2.strip(), operand2.strip()))
+#                 asm.mov(variables[var], 'eax')
+#         elif instr_type == 'control':
+#             asm_label = asm.new_label()
+#             if instr.startswith('if'):
+#                 _, condition = instr.split('if')
+#                 condition = condition.strip()
+#                 operand1, operator, operand2 = condition.split()
+#                 asm.mov('eax', variables.get(operand1.strip(), operand1.strip()))
+#                 asm.cmp('eax', variables.get(operand2.strip(), operand2.strip()))
+#                 if operator == '<=':
+#                     asm.jle(asm_label)
+#             elif instr.startswith('else'):
+#                 asm.jmp(asm_label)
+#             elif instr.startswith('while'):
+#                 _, condition = instr.split('while')
+#                 condition = condition.strip()
+#                 operand1, operator, operand2 = condition.split()
+#                 asm_label_start = asm.new_label()
+#                 asm_label_end = asm.new_label()
+#                 asm.bind_label(asm_label_start)
+#                 asm.mov('eax', variables.get(operand1.strip(), operand1.strip()))
+#                 asm.cmp('eax', variables.get(operand2.strip(), operand2.strip()))
+#                 if operator == '>':
+#                     asm.jle(asm_label_end)
+#                 elif operator == '>=':
+#                     asm.jl(asm_label_end)
+#                 elif operator == '<':
+#                     asm.jge(asm_label_end)
+#                 elif operator == '<=':
+#                     asm.jg(asm_label_end)
+#                 asm.jmp(asm_label_start)
+#                 asm.bind_label(asm_label_end)
+#             asm.bind_label(asm_label)
+#     return asm.get_machine_code()
 
 
 variables, instructions = parse_hlc_code(hlc)
