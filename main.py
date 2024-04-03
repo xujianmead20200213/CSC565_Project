@@ -40,6 +40,95 @@ operators = ['+', '-', '*', '/']
 variable = {}
 memory = [0] * 1024  # 1kB byte-addressable memory
 
+# Define mappings for variables, registers, and flags along with their corresponding addresses
+mapping = {
+    'a': '01',
+    'b': '02',
+    'c': '03',
+    'x': '04',
+    'y': '05',
+    'z': '06',
+    'eax': '07',
+    'ebx': '08',
+    'ecx': '09',
+    'edx': '0A',
+    'CF': '0B',
+    'OF': '0C',
+    'SF': '0D',
+    'ZF': '0E',
+    '__$EncStackInitStart': 'A0'
+}
+
+
+def check_variables(variable):
+    # Look up the address for the variable
+    address = mapping.get(variable, 'Unknown')  # Return 'Unknown' if the variable does not exist
+    if address == 'Unknown':
+        print("Error: " + variable + " is not defined!")
+
+
+# Define the mapping between YMC instructions and machine code
+ymc_to_machine_code = {
+    'vrmov': '10',
+    'vmmov': '11',
+    'rmmov': '12',
+    'mrmov': '13',
+    'rrmov': '14',
+    'mmmov': '15',
+    'cmp': '20',
+    'iaddmul': '42',
+    'iadddiv': '43',
+    'isubmul': '46',
+    'isubdiv': '47',
+    'imuladd': '48',
+    'imulsub': '49',
+    'imulmul': '4A',
+    'imuldiv': '4B',
+    'idivadd': '4C',
+    'idivsub': '4D',
+    'idivmul': '4E',
+    'idivdiv': '4F',
+    'addadd': '50',
+    'addsub': '51',
+    'addmul': '52',
+    'adddiv': '53',
+    'subadd': '54',
+    'subsub': '55',
+    'submul': '56',
+    'subdiv': '57',
+    'muladd': '58',
+    'mulsub': '59',
+    'mulmul': '5A',
+    'muldiv': '5B',
+    'divadd': '5C',
+    'divsub': '5D',
+    'divmul': '5E',
+    'divdiv': '5F',
+    'add': '60',
+    'sub': '61',
+    'mul': '62',
+    'div': '63',
+    'imul': '64',
+    'idiv': '65',
+    'jmp': '70',
+    'jle': '71',
+    'jl': '72',
+    'je': '73',
+    'jne': '74',
+    'jge': '75',
+    'jg': '76',
+    'call': '90'
+}
+
+
+def check_ymc_code(ymc_code):
+    # Look up the machine code
+    machine_codes = ymc_to_machine_code.get(ymc_code, 'Unknown')  # Return 'Unknown' if machine code is not found
+    if machine_codes == 'Unknown':
+        print("Error: " + ymc_code + " is not defined!")
+
+
+
 
 def parse_hlc_code(hlc):
     for line in hlc.split('\n'):
