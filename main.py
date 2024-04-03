@@ -39,7 +39,6 @@ relational_operators = {'<', '<=', '>', '>=', '==', '!='}
 operators = ['+', '-', '*', '/']
 variable = {}
 memory = [0] * 1024  # 1kB byte-addressable memory
-
 # Define mappings for variables, registers, and flags along with their corresponding addresses
 mapping = {
     'a': '01',
@@ -58,15 +57,6 @@ mapping = {
     'ZF': '0E',
     '__$EncStackInitStart': 'A0'
 }
-
-
-def check_variables(variable):
-    # Look up the address for the variable
-    address = mapping.get(variable, 'Unknown')  # Return 'Unknown' if the variable does not exist
-    if address == 'Unknown':
-        print("Error: " + variable + " is not defined!")
-
-
 # Define the mapping between YMC instructions and machine code
 ymc_to_machine_code = {
     'vrmov': '10',
@@ -121,13 +111,18 @@ ymc_to_machine_code = {
 }
 
 
+def check_variables(variable):
+    # Look up the address for the variable
+    address = mapping.get(variable, 'Unknown')  # Return 'Unknown' if the variable does not exist
+    if address == 'Unknown':
+        print("Error: " + variable + " is not defined!")
+
+
 def check_ymc_code(ymc_code):
     # Look up the machine code
     machine_codes = ymc_to_machine_code.get(ymc_code, 'Unknown')  # Return 'Unknown' if machine code is not found
     if machine_codes == 'Unknown':
         print("Error: " + ymc_code + " is not defined!")
-
-
 
 
 def parse_hlc_code(hlc):
@@ -252,7 +247,6 @@ def generate_assembly_code(variables, instructions):
                 asm.bind_label(asm_label_end)
             asm.bind_label(asm_label)
     return asm.get_machine_code()
-
 
 
 variables, instructions = parse_hlc_code(hlc_code)
