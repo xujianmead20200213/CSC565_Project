@@ -232,7 +232,7 @@ def parse_hlc_code(hlc_code):
                 sys.exit()
             if_else_flag = 1
             line_if = line.split()
-            if len(line_if) == 4 and line_if[3] in relational_operators:
+            if len(line_if) == 4 and line_if[2] in relational_operators:
                 # Todo Add here Convert HLC to YMC
                 convert_hlc_ymc.append("add machine code here mark jump address here && change counter")
             else:
@@ -253,7 +253,7 @@ def parse_hlc_code(hlc_code):
                 sys.exit()
         elif line.startswith('while'):
             line_while = line.split()
-            if len(line_while) == 4 and line_while[3] in relational_operators:
+            if len(line_while) == 4 and line_while[2] in relational_operators:
                 # Todo Add here Convert HLC to YMC
                 convert_hlc_ymc.append("add machine code here fill the jump address here && change counter")
             else:
@@ -269,12 +269,12 @@ def parse_hlc_code(hlc_code):
                 if len(right_side) > 0:
                     if len(right_side) == 1:
                         right_type = variable.get(right_side[0])
-                        if right_type is not None and left_type != right_type:
+                        if right_type is not None and isinstance(type(left_type), type(right_type)):
                             print(f"Error: Inconsistent variable types for '{var}' and '{right_side[0]}'")
                             sys.exit()
                         else:
                             # Todo Add here
-                            instruction = ["vrmov", right_side[0], "eax"]
+                            instruction = "vrmov " + right_side[0] + " eax"
                             counter = generate_assembly_code("vrmov", instruction, counter, line)
                     elif len(right_side) == 2 or len(right_side) == 4 or len(right_side) > 5:
                         print(f"Error: The formular is incorrect!")
@@ -282,48 +282,48 @@ def parse_hlc_code(hlc_code):
                     elif len(right_side) == 3:
                         right_type_1 = variable.get(right_side[0])
                         right_type_2 = variable.get(right_side[2])
-                        if not (right_type_1.isnumeric() or right_type_1.isidentifier()):
-                            print(f"Error: The formular is incorrect!")
+                        if not (right_side[0].isnumeric() or right_type_1 is not None):
+                            print("Error: The formula is incorrect!")
                             sys.exit()
-                        if not (right_type_2.isnumeric() or right_type_2.isidentifier()):
-                            print(f"Error: The formular is incorrect!")
+                        if not (right_side[2].isnumeric() or right_type_2 is not None):
+                            print("Error: The formula is incorrect!")
                             sys.exit()
                         if right_side[1] not in operators:
                             print(f"Error: The formular is incorrect!")
                             sys.exit()
-                        elif ((right_type_1 is not None and left_type != right_type_1)
-                              or (right_type_2 is not None and left_type != right_type_2)):
+                        elif ((right_type_1 is not None and isinstance(type(left_type), type(right_type_1)))
+                              or (right_type_2 is not None and  isinstance(type(left_type), type(right_type_2)))):
                             print(f"Error: Inconsistent variable types for"
                                   f" '{var}' and '{right_side[0]}' or '{right_side[2]}'")
                             sys.exit()
                         else:
                             # Todo Add heres
-                            instruction = ["vrmov", right_side[0], "eax"]
+                            instruction = "vrmov "+right_side[0]+" eax"
                             counter = generate_assembly_code("vrmov", instruction, counter, line)
                     elif len(right_side) == 5:
                         right_type_1 = variable.get(right_side[0])
                         right_type_2 = variable.get(right_side[2])
                         right_type_3 = variable.get(right_side[4])
-                        if not (right_type_1.isnumeric() or right_type_1.isidentifier()):
-                            print(f"Error: The formular is incorrect!")
+                        if not (right_side[0].isnumeric() or right_type_1 is not None):
+                            print("Error: The formula is incorrect!")
                             sys.exit()
-                        if not (right_type_2.isnumeric() or right_type_2.isidentifier()):
-                            print(f"Error: The formular is incorrect!")
+                        if not (right_side[2].isnumeric() or right_type_2 is not None):
+                            print("Error: The formula is incorrect!")
                             sys.exit()
-                        if not (right_type_3.isnumeric() or right_type_3.isidentifier()):
-                            print(f"Error: The formular is incorrect!")
+                        if not (right_side[4].isnumeric() or right_type_3 is not None):
+                            print("Error: The formula is incorrect!")
                             sys.exit()
                         if right_side[1] not in operators or right_side[3] not in operators:
                             print(f"Error: The formular is incorrect!")
                             sys.exit()
-                        elif ((right_type_1 is not None and left_type != right_type_1)
-                              or (right_type_2 is not None and left_type != right_type_2)
-                              or (right_type_3 is not None and left_type != right_type_3)):
+                        elif ((right_type_1 is not None and isinstance(type(left_type), type(right_type_1)))
+                              or (right_type_2 is not None and isinstance(type(left_type), type(right_type_2)))
+                              or (right_type_3 is not None and isinstance(type(left_type), type(right_type_3)))):
                             print(f"Error: Inconsistent variable types for"
                                   f" '{var}' and '{right_side[0]}' or '{right_side[2]}' or '{right_side[4]}'")
                             sys.exit()
                         else:
-                            instruction = ["vrmov", right_side[0], "eax"]
+                            instruction = "vrmov " + right_side[0] + " eax"
                             counter = generate_assembly_code("vrmov", instruction, counter, line)
                 else:
                     print(f"Error: Nothing on the right side!")
