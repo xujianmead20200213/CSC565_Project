@@ -290,61 +290,20 @@ def check_formula(expr):
 # keys = [key for key, value in my_dict.items() if value == value_to_find]
 def save_csv_file(register_v, flag_v, hlc_code, memory_address, ymc_code, ymc_encoding):
     new_csv_line = [hlc_code, memory_address, ymc_code, ymc_encoding, register_v, flag_v]
-    csv
+    HLC_program.append(new_csv_line)
 
 def generate_assembly_code(action, instruction):
-    'vrmov': '10',
-    'vmmov': '11',
-    'rmmov': '12',
-    'mrmov': '13',
-    'rrmov': '14',
-    'mmmov': '15',
-    'cmp': '20',
-    'iaddmul': '42',
-    'iadddiv': '43',
-    'isubmul': '46',
-    'isubdiv': '47',
-    'imuladd': '48',
-    'imulsub': '49',
-    'imulmul': '4A',
-    'imuldiv': '4B',
-    'idivadd': '4C',
-    'idivsub': '4D',
-    'idivmul': '4E',
-    'idivdiv': '4F',
-    'addadd': '50',
-    'addsub': '51',
-    'addmul': '52',
-    'adddiv': '53',
-    'subadd': '54',
-    'subsub': '55',
-    'submul': '56',
-    'subdiv': '57',
-    'muladd': '58',
-    'mulsub': '59',
-    'mulmul': '5A',
-    'muldiv': '5B',
-    'divadd': '5C',
-    'divsub': '5D',
-    'divmul': '5E',
-    'divdiv': '5F',
-    'add': '60',
-    'sub': '61',
-    'mul': '62',
-    'div': '63',
-    'imul': '64',
-    'idiv': '65',
-    'jmp': '70',
-    'jle': '71',
-    'jl': '72',
-    'je': '73',
-    'jne': '74',
-    'jge': '75',
-    'jg': '76',
-    'call': '90'
+
 
     if action == 'vrmov':
-        memory.append("10" + "eax")
+        # split the instruction
+        var_list = instruction.split()
+        # put the first instruction into memory according to table is the action like vrmov
+        memory.append(mapping.get(var_list[0]))
+        # put the second instruction into memory like value
+        memory.append(var_list[1])
+        # put the third instruction into memory like register
+        memory.append(registers.get(var_list[2]))
     elif action == 'vmmov':
         return '11'
     elif action == 'rmmov':
@@ -362,10 +321,51 @@ def generate_assembly_code(action, instruction):
     elif action == 'iadddiv':
         return '43'
     # Add more cases as needed
+    # 'isubmul': '46',
+    # 'isubdiv': '47',
+    # 'imuladd': '48',
+    # 'imulsub': '49',
+    # 'imulmul': '4A',
+    # 'imuldiv': '4B',
+    # 'idivadd': '4C',
+    # 'idivsub': '4D',
+    # 'idivmul': '4E',
+    # 'idivdiv': '4F',
+    # 'addadd': '50',
+    # 'addsub': '51',
+    # 'addmul': '52',
+    # 'adddiv': '53',
+    # 'subadd': '54',
+    # 'subsub': '55',
+    # 'submul': '56',
+    # 'subdiv': '57',
+    # 'muladd': '58',
+    # 'mulsub': '59',
+    # 'mulmul': '5A',
+    # 'muldiv': '5B',
+    # 'divadd': '5C',
+    # 'divsub': '5D',
+    # 'divmul': '5E',
+    # 'divdiv': '5F',
+    # 'add': '60',
+    # 'sub': '61',
+    # 'mul': '62',
+    # 'div': '63',
+    # 'imul': '64',
+    # 'idiv': '65',
+    # 'jmp': '70',
+    # 'jle': '71',
+    # 'jl': '72',
+    # 'je': '73',
+    # 'jne': '74',
+    # 'jge': '75',
+    # 'jg': '76',
+    # 'call': '90'
+
     else:
-        return 'Unknown action'
-    memory.append(instruction)
-    eax = unsigned_array.get("a")
+        print("Error: Unknown action.")
+        sys.exit()
+
 
 
 assembly_code = generate_assembly_code("mov", "right_side")
