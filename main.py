@@ -292,9 +292,8 @@ def save_csv_file(register_v, flag_v, hlc_code, memory_address, ymc_code, ymc_en
     new_csv_line = [hlc_code, memory_address, ymc_code, ymc_encoding, register_v, flag_v]
     HLC_program.append(new_csv_line)
 
+
 def generate_assembly_code(action, instruction):
-
-
     if action == 'vrmov':
         # split the instruction
         var_list = instruction.split()
