@@ -1,6 +1,8 @@
 import ctypes
 import sys
 import csv
+from ctypes import c_int8
+from typing import Dict
 
 # High Level Code
 hlc = """
@@ -113,10 +115,62 @@ ymc_to_machine_code = {
     'jg': '76',
     'call': '90'
 }
+action_spaces = {
+    'vrmov': '3',
+    'vmmov': '3',
+    'rmmov': '3',
+    'mrmov': '3',
+    'rrmov': '3',
+    'mmmov': '3',
+    'cmp': '3',
+    'iaddmul': '3',
+    'iadddiv': '3',
+    'isubmul': '3',
+    'isubdiv': '3',
+    'imuladd': '3',
+    'imulsub': '3',
+    'imulmul': '3',
+    'imuldiv': '3',
+    'idivadd': '3',
+    'idivsub': '3',
+    'idivmul': '3',
+    'idivdiv': '3',
+    'addadd': '3',
+    'addsub': '3',
+    'addmul': '3',
+    'adddiv': '3',
+    'subadd': '3',
+    'subsub': '3',
+    'submul': '3',
+    'subdiv': '3',
+    'muladd': '3',
+    'mulsub': '3',
+    'mulmul': '3',
+    'muldiv': '3',
+    'divadd': '3',
+    'divsub': '3',
+    'divmul': '3',
+    'divdiv': '3',
+    'add': '2',
+    'sub': '2',
+    'mul': '2',
+    'div': '2',
+    'imul': '2',
+    'idiv': '2',
+    'jmp': '2',
+    'jle': '2',
+    'jl': '2',
+    'je': '2',
+    'jne': '2',
+    'jge': '2',
+    'jg': '2',
+    'call': '2'
+}
 convert_hlc_ymc = []
 hlc_mapping_ymc = []
 HLC_program = []
-csv_title = ["HLC instruction", "YMC Address", "YMC assembly", "YMC encoding", "Modified registers (if any, after execution)", "Modified flags (if any, after execution)"]
+csv_title = ["HLC instruction", "YMC Address", "YMC assembly", "YMC encoding",
+             "Modified registers (if any, after execution)", "Modified flags (if any, after execution)"]
 HLC_program.append(csv_title)
 
 
@@ -288,8 +342,11 @@ def check_formula(expr):
         return expr.split()
 
 
-# 逆向查找的案例
-# keys = [key for key, value in my_dict.items() if value == value_to_find]
+def value_get_key(value_find,mapper_find):
+    key_find = [key for key, value in mapper_find.items() if value == value_find]
+    return key_find
+
+
 def save_csv_file(register_v, flag_v, hlc_code, memory_address, ymc_code, ymc_encoding):
     new_csv_line = [hlc_code, memory_address, ymc_code, ymc_encoding, register_v, flag_v]
     HLC_program.append(new_csv_line)
@@ -378,15 +435,97 @@ def generate_assembly_code(action, instruction, counter_c, hlc_code_line):
     return counter_c
 
 
+def process_memory_instruction(memory_instruction):
+    pointer = 0
+    while len(memory_instruction) < pointer:
+        machine_code = memory_instruction[pointer]
+        action = value_get_key(machine_code, ymc_to_machine_code)
+        action_space = action_spaces.get(action)
+        action_start = pointer
+        machine_code = str(machine_code)
+        instruction = []
+        while action_space > 1:
+            pointer += 1
+            action_space -= 1
+            new_machine_code = memory_instruction[pointer]
+            machine_code = machine_code + " " + str(new_machine_code)
+            instruction.append(new_machine_code)
+        process_function(action, instruction)
+        save_csv_file(hlc_mapping_ymc[action_start], action_start,
+                      convert_hlc_ymc[action_start], machine_code, registers, flags)
 
-assembly_code = generate_assembly_code("mov", "right_side")
+
+def process_function(action, instruction):
+    if action == 'vrmov':
+        value = instruction[0]
+        register = value_get_key(instruction[1], mapping)
+        registers[register] = value
+        # flag changes like ZF,OF,CF,SF
+        # All register changes
+    elif action == 'vmmov':
+        return '11'
+    elif action == 'rmmov':
+        return '12'
+    elif action == 'mrmov':
+        return '13'
+    elif action == 'rrmov':
+        return '14'
+    elif action == 'mmmov':
+        return '15'
+    elif action == 'cmp':
+        return '20'
+    elif action == 'iaddmul':
+        return '42'
+    elif action == 'iadddiv':
+        return '43'
+    # Add more cases as needed
+    # 'isubmul': '46',
+    # 'isubdiv': '47',
+    # 'imuladd': '48',
+    # 'imulsub': '49',
+    # 'imulmul': '4A',
+    # 'imuldiv': '4B',
+    # 'idivadd': '4C',
+    # 'idivsub': '4D',
+    # 'idivmul': '4E',
+    # 'idivdiv': '4F',
+    # 'addadd': '50',
+    # 'addsub': '51',
+    # 'addmul': '52',
+    # 'adddiv': '53',
+    # 'subadd': '54',
+    # 'subsub': '55',
+    # 'submul': '56',
+    # 'subdiv': '57',
+    # 'muladd': '58',
+    # 'mulsub': '59',
+    # 'mulmul': '5A',
+    # 'muldiv': '5B',
+    # 'divadd': '5C',
+    # 'divsub': '5D',
+    # 'divmul': '5E',
+    # 'divdiv': '5F',
+    # 'add': '60',
+    # 'sub': '61',
+    # 'mul': '62',
+    # 'div': '63',
+    # 'imul': '64',
+    # 'idiv': '65',
+    # 'jmp': '70',
+    # 'jle': '71',
+    # 'jl': '72',
+    # 'je': '73',
+    # 'jne': '74',
+    # 'jge': '75',
+    # 'jg': '76',
+    # 'call': '90'
+    else:
+        print("Error: Unknown action.")
+        sys.exit()
 
 
-variables, instructions = parse_hlc_code(hlc)
-machine_code = generate_assembly_code(variables, instructions)
-print('Generated Assembly Code:', machine_code)
-
-
+parse_hlc_code(hlc)
+process_memory_instruction(memory)
 # Write into CSV path
 csv_file_path = 'C:/Users/DELL/Desktop/CSC565/Project/HLC-program.csv'
 with open(csv_file_path, 'w', newline='') as csvfile:
