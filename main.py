@@ -114,7 +114,6 @@ ymc_to_machine_code = {
     'call': '90'
 }
 convert_hlc_ymc = []
-counter = 0
 hlc_mapping_ymc = []
 HLC_program = []
 csv_title = ["HLC instruction", "YMC Address", "YMC assembly", "YMC encoding", "Modified registers (if any, after execution)", "Modified flags (if any, after execution)"]
@@ -145,6 +144,7 @@ def parse_hlc_code(hlc_code):
     # Start with 0. Mark it as 1 if found while. Until finished mark it as 0
     jmp_address = 0
     if_else_flag = 0
+    counter = 0
     counter_variable = 1
     for line in hlc_code.split('\n'):
         line = line.strip()
@@ -220,7 +220,8 @@ def parse_hlc_code(hlc_code):
                             sys.exit()
                         else:
                             # Todo Add here
-                            convert_hlc_ymc.append("add machine code here")
+                            instruction = ["vrmov", right_side[0], "eax"]
+                            counter = generate_assembly_code("vrmov", instruction, counter)
                     elif len(right_side) == 2 or len(right_side) == 4 or len(right_side) > 5:
                         print(f"Error: The formular is incorrect!")
                         sys.exit()
@@ -242,8 +243,9 @@ def parse_hlc_code(hlc_code):
                                   f" '{var}' and '{right_side[0]}' or '{right_side[2]}'")
                             sys.exit()
                         else:
-                            # Todo Add here
-                            convert_hlc_ymc.append("add machine code here")
+                            # Todo Add heres
+                            instruction = ["vrmov", right_side[0], "eax"]
+                            counter = generate_assembly_code("vrmov", instruction, counter)
                     elif len(right_side) == 5:
                         right_type_1 = variable.get(right_side[0])
                         right_type_2 = variable.get(right_side[2])
@@ -267,8 +269,8 @@ def parse_hlc_code(hlc_code):
                                   f" '{var}' and '{right_side[0]}' or '{right_side[2]}' or '{right_side[4]}'")
                             sys.exit()
                         else:
-                            # Todo Add here
-                            convert_hlc_ymc.append("add machine code here")
+                            instruction = ["vrmov", right_side[0], "eax"]
+                            counter = generate_assembly_code("vrmov", instruction, counter)
                 else:
                     print(f"Error: Nothing on the right side!")
                     sys.exit()
@@ -293,16 +295,22 @@ def save_csv_file(register_v, flag_v, hlc_code, memory_address, ymc_code, ymc_en
     HLC_program.append(new_csv_line)
 
 
-def generate_assembly_code(action, instruction):
+def generate_assembly_code(action, instruction, counter_c):
     if action == 'vrmov':
         # split the instruction
         var_list = instruction.split()
         # put the first instruction into memory according to table is the action like vrmov
         memory.append(mapping.get(var_list[0]))
+        counter_c += 1
+        convert_hlc_ymc.append(instruction)
         # put the second instruction into memory like value
         memory.append(var_list[1])
+        counter_c += 1
+        convert_hlc_ymc.append(instruction)
         # put the third instruction into memory like register
         memory.append(registers.get(var_list[2]))
+        counter_c += 1
+        convert_hlc_ymc.append(instruction)
     elif action == 'vmmov':
         return '11'
     elif action == 'rmmov':
@@ -364,6 +372,7 @@ def generate_assembly_code(action, instruction):
     else:
         print("Error: Unknown action.")
         sys.exit()
+    return counter_c
 
 
 
