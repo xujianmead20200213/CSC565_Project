@@ -29,25 +29,27 @@ while y > 0
 """
 
 # Define an array with unsigned elements
-unsigned_array = {'a': ctypes.c_uint8(0), 'b': ctypes.c_uint8(0), 'c': ctypes.c_uint8(0)}
+# unsigned_array = {'a': ctypes.c_uint8(0), 'b': ctypes.c_uint8(0), 'c': ctypes.c_uint8(0)}
+unsigned_array = {}
 # Define an array with signed elements
-signed_array = {'x': ctypes.c_int8(0), 'y': ctypes.c_int8(0), 'z': ctypes.c_int8(0)}
+# signed_array = {'x': ctypes.c_int8(0), 'y': ctypes.c_int8(0), 'z': ctypes.c_int8(0)}
+signed_array = {}
 # Define an array with 8-bit wide registers
 registers = {'eax': ctypes.c_int8(0), 'ebx': ctypes.c_int8(0), 'ecx': ctypes.c_int8(0), 'edx': ctypes.c_int8(0)}
 if_count = 0
 while_count = 0
-relational_operators = {'<', '<=', '>', '>=', '==', '!='}
+relational_operators = ['<', '<=', '>', '>=', '==', '!=']
 operators = ['+', '-', '*', '/']
-variable = {'a', 'b', 'c', 'x', 'y', 'z'}
+variable = {}
 memory = [] * 1024  # 1kB byte-addressable memory
 # Define mappings for variables, registers, and flags along with their corresponding addresses
 mapping = {
-    'a': '01',
-    'b': '02',
-    'c': '03',
-    'x': '04',
-    'y': '05',
-    'z': '06',
+    # 'a': '01',
+    # 'b': '02',
+    # 'c': '03',
+    # 'x': '04',
+    # 'y': '05',
+    # 'z': '06',
     'eax': '07',
     'ebx': '08',
     'ecx': '09',
@@ -111,13 +113,9 @@ ymc_to_machine_code = {
     'call': '90'
 }
 convert_hlc_ymc = []
-# # Start with 0. Mark it as 1 if found while. Until finished mark it as 0
-# loop_flag = 0
-# Start with 0. Mark it as 1 if found while. Until finished mark it as 0
-if_else_flag = 0
-jmp_address = 0
 counter = 0
 HLC_program = []
+hlc_mapping_ymc = []
 
 
 def check_variables(variable_code):
@@ -139,7 +137,12 @@ def check_ymc_code(ymc_code):
 
 
 def parse_hlc_code(hlc_code):
-    global if_else_flag
+    # # Start with 0. Mark it as 1 if found while. Until finished mark it as 0
+    # loop_flag = 0
+    # Start with 0. Mark it as 1 if found while. Until finished mark it as 0
+    jmp_address = 0
+    if_else_flag = 0
+    counter_variable = 1
     for line in hlc_code.split('\n'):
         line = line.strip()
         if not line:
@@ -152,6 +155,9 @@ def parse_hlc_code(hlc_code):
                 sys.exit()
             for var_name in var_list:
                 unsigned_array[var_name] = ctypes.c_uint8(0)
+                variable[var_name] = ctypes.c_uint8(0)
+                mapping[var_name] = "0{counter_variable}"
+                counter_variable += 1
         elif line.startswith('signed'):
             _, var_list = line.split(' ', 1)
             var_list = var_list.split()
@@ -160,6 +166,9 @@ def parse_hlc_code(hlc_code):
                 sys.exit()
             for var_name in var_list:
                 signed_array[var_name] = ctypes.c_int8(0)
+                variable[var_name] = ctypes.c_int8(0)
+                mapping[var_name] = "0{counter_variable}"
+                counter_variable += 1
         elif line.startswith('if'):
             if if_else_flag == 1:
                 print("Error: If-else statement is incorrect!")
