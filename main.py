@@ -36,6 +36,7 @@ unsigned_array = {}
 signed_array = {}
 # Define an array with 8-bit wide registers
 registers = {'eax': ctypes.c_int8(0), 'ebx': ctypes.c_int8(0), 'ecx': ctypes.c_int8(0), 'edx': ctypes.c_int8(0)}
+flags = {'SF': ctypes.c_int8(0), 'OF': ctypes.c_int8(0), 'ZF': ctypes.c_int8(0), 'CF': ctypes.c_int8(0)}
 if_count = 0
 while_count = 0
 relational_operators = ['<', '<=', '>', '>=', '==', '!=']
@@ -114,8 +115,10 @@ ymc_to_machine_code = {
 }
 convert_hlc_ymc = []
 counter = 0
-HLC_program = []
 hlc_mapping_ymc = []
+HLC_program = []
+csv_title = ["HLC instruction", "YMC Address", "YMC assembly", "YMC encoding", "Modified registers (if any, after execution)", "Modified flags (if any, after execution)"]
+HLC_program.append(csv_title)
 
 
 def check_variables(variable_code):
@@ -283,7 +286,63 @@ def check_formula(expr):
         return expr.split()
 
 
+# 逆向查找的案例
+# keys = [key for key, value in my_dict.items() if value == value_to_find]
+def save_csv_file(register_v, flag_v, hlc_code, memory_address, ymc_code, ymc_encoding):
+    new_csv_line = [hlc_code, memory_address, ymc_code, ymc_encoding, register_v, flag_v]
+    csv
+
 def generate_assembly_code(action, instruction):
+    'vrmov': '10',
+    'vmmov': '11',
+    'rmmov': '12',
+    'mrmov': '13',
+    'rrmov': '14',
+    'mmmov': '15',
+    'cmp': '20',
+    'iaddmul': '42',
+    'iadddiv': '43',
+    'isubmul': '46',
+    'isubdiv': '47',
+    'imuladd': '48',
+    'imulsub': '49',
+    'imulmul': '4A',
+    'imuldiv': '4B',
+    'idivadd': '4C',
+    'idivsub': '4D',
+    'idivmul': '4E',
+    'idivdiv': '4F',
+    'addadd': '50',
+    'addsub': '51',
+    'addmul': '52',
+    'adddiv': '53',
+    'subadd': '54',
+    'subsub': '55',
+    'submul': '56',
+    'subdiv': '57',
+    'muladd': '58',
+    'mulsub': '59',
+    'mulmul': '5A',
+    'muldiv': '5B',
+    'divadd': '5C',
+    'divsub': '5D',
+    'divmul': '5E',
+    'divdiv': '5F',
+    'add': '60',
+    'sub': '61',
+    'mul': '62',
+    'div': '63',
+    'imul': '64',
+    'idiv': '65',
+    'jmp': '70',
+    'jle': '71',
+    'jl': '72',
+    'je': '73',
+    'jne': '74',
+    'jge': '75',
+    'jg': '76',
+    'call': '90'
+
     if action == 'vrmov':
         memory.append("10" + "eax")
     elif action == 'vmmov':
