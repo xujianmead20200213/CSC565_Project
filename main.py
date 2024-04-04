@@ -44,7 +44,7 @@ while_count = 0
 relational_operators = ['<', '<=', '>', '>=', '==', '!=']
 operators = ['+', '-', '*', '/']
 variable = {}
-memory = [] * 1024  # 1kB byte-addressable memory
+memory = [format(0, '02x') for _ in range(1024)]  # 1kB byte-addressable memory
 # Define mappings for variables, registers, and flags along with their corresponding addresses
 mapping = {
     # 'a': '01',
@@ -213,7 +213,7 @@ def parse_hlc_code(hlc_code):
             for var_name in var_list:
                 unsigned_array[var_name] = ctypes.c_uint8(0)
                 variable[var_name] = ctypes.c_uint8(0)
-                mapping[var_name] = "0{counter_variable}"
+                mapping[var_name] = "0" + str(counter_variable)
                 counter_variable += 1
         elif line.startswith('signed'):
             _, var_list = line.split(' ', 1)
@@ -224,7 +224,7 @@ def parse_hlc_code(hlc_code):
             for var_name in var_list:
                 signed_array[var_name] = ctypes.c_int8(0)
                 variable[var_name] = ctypes.c_int8(0)
-                mapping[var_name] = "0{counter_variable}"
+                mapping[var_name] = "0" + str(counter_variable)
                 counter_variable += 1
         elif line.startswith('if'):
             if if_else_flag == 1:
@@ -357,17 +357,24 @@ def generate_assembly_code(action, instruction, counter_c, hlc_code_line):
         # split the instruction
         var_list = instruction.split()
         # put the first instruction into memory according to table is the action like vrmov
-        memory.append(mapping.get(var_list[0]))
+        memory[counter_c] = ymc_to_machine_code.get(var_list[0])
         counter_c += 1
         convert_hlc_ymc.append(instruction)
         hlc_mapping_ymc.append(hlc_code_line)
         # put the second instruction into memory like value
-        memory.append(var_list[1])
+        if variable.get(var_list[1]) is None:
+            num = int(var_list[1])
+            if num < 0:
+                num = (1 << 8) + num
+            hex_str = format(num, '02x')
+            memory[counter_c] = hex_str
+        else:
+            memory[counter_c] = mapping.get(var_list[1])
         counter_c += 1
         convert_hlc_ymc.append(instruction)
         hlc_mapping_ymc.append(hlc_code_line)
         # put the third instruction into memory like register
-        memory.append(registers.get(var_list[2]))
+        memory[counter_c] = mapping.get(var_list[2])
         counter_c += 1
         convert_hlc_ymc.append(instruction)
         hlc_mapping_ymc.append(hlc_code_line)
