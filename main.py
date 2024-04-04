@@ -221,7 +221,7 @@ def parse_hlc_code(hlc_code):
                         else:
                             # Todo Add here
                             instruction = ["vrmov", right_side[0], "eax"]
-                            counter = generate_assembly_code("vrmov", instruction, counter)
+                            counter = generate_assembly_code("vrmov", instruction, counter, line)
                     elif len(right_side) == 2 or len(right_side) == 4 or len(right_side) > 5:
                         print(f"Error: The formular is incorrect!")
                         sys.exit()
@@ -245,7 +245,7 @@ def parse_hlc_code(hlc_code):
                         else:
                             # Todo Add heres
                             instruction = ["vrmov", right_side[0], "eax"]
-                            counter = generate_assembly_code("vrmov", instruction, counter)
+                            counter = generate_assembly_code("vrmov", instruction, counter, line)
                     elif len(right_side) == 5:
                         right_type_1 = variable.get(right_side[0])
                         right_type_2 = variable.get(right_side[2])
@@ -270,7 +270,7 @@ def parse_hlc_code(hlc_code):
                             sys.exit()
                         else:
                             instruction = ["vrmov", right_side[0], "eax"]
-                            counter = generate_assembly_code("vrmov", instruction, counter)
+                            counter = generate_assembly_code("vrmov", instruction, counter, line)
                 else:
                     print(f"Error: Nothing on the right side!")
                     sys.exit()
@@ -295,7 +295,7 @@ def save_csv_file(register_v, flag_v, hlc_code, memory_address, ymc_code, ymc_en
     HLC_program.append(new_csv_line)
 
 
-def generate_assembly_code(action, instruction, counter_c):
+def generate_assembly_code(action, instruction, counter_c, hlc_code_line):
     if action == 'vrmov':
         # split the instruction
         var_list = instruction.split()
@@ -303,14 +303,17 @@ def generate_assembly_code(action, instruction, counter_c):
         memory.append(mapping.get(var_list[0]))
         counter_c += 1
         convert_hlc_ymc.append(instruction)
+        hlc_mapping_ymc.append(hlc_code_line)
         # put the second instruction into memory like value
         memory.append(var_list[1])
         counter_c += 1
         convert_hlc_ymc.append(instruction)
+        hlc_mapping_ymc.append(hlc_code_line)
         # put the third instruction into memory like register
         memory.append(registers.get(var_list[2]))
         counter_c += 1
         convert_hlc_ymc.append(instruction)
+        hlc_mapping_ymc.append(hlc_code_line)
     elif action == 'vmmov':
         return '11'
     elif action == 'rmmov':
@@ -377,65 +380,6 @@ def generate_assembly_code(action, instruction, counter_c):
 
 
 assembly_code = generate_assembly_code("mov", "right_side")
-#
-# def generate_assembly_code(action):
-#     for instr_type, instr in instructions:
-#         if instr_type == 'assign':
-#             var, expr = instr
-#             if '+' in expr:
-#                 operand1, operand2 = expr.split('+')
-#                 asm.mov('eax', variables.get(operand1.strip(), operand1.strip()))
-#                 asm.add('eax', variables.get(operand2.strip(), operand2.strip()))
-#                 asm.mov(variables[var], 'eax')
-#             elif '-' in expr:
-#                 operand1, operand2 = expr.split('-')
-#                 asm.mov('eax', variables.get(operand1.strip(), operand1.strip()))
-#                 asm.sub('eax', variables.get(operand2.strip(), operand2.strip()))
-#                 asm.mov(variables[var], 'eax')
-#             elif '*' in expr:
-#                 operand1, operand2 = expr.split('*')
-#                 asm.mov('eax', variables.get(operand1.strip(), operand1.strip()))
-#                 asm.imul('eax', variables.get(operand2.strip(), operand2.strip()))
-#                 asm.mov(variables[var], 'eax')
-#             elif '/' in expr:
-#                 operand1, operand2 = expr.split('/')
-#                 asm.mov('eax', variables.get(operand1.strip(), operand1.strip()))
-#                 asm.cdq()
-#                 asm.idiv(variables.get(operand2.strip(), operand2.strip()))
-#                 asm.mov(variables[var], 'eax')
-#         elif instr_type == 'control':
-#             asm_label = asm.new_label()
-#             if instr.startswith('if'):
-#                 _, condition = instr.split('if')
-#                 condition = condition.strip()
-#                 operand1, operator, operand2 = condition.split()
-#                 asm.mov('eax', variables.get(operand1.strip(), operand1.strip()))
-#                 asm.cmp('eax', variables.get(operand2.strip(), operand2.strip()))
-#                 if operator == '<=':
-#                     asm.jle(asm_label)
-#             elif instr.startswith('else'):
-#                 asm.jmp(asm_label)
-#             elif instr.startswith('while'):
-#                 _, condition = instr.split('while')
-#                 condition = condition.strip()
-#                 operand1, operator, operand2 = condition.split()
-#                 asm_label_start = asm.new_label()
-#                 asm_label_end = asm.new_label()
-#                 asm.bind_label(asm_label_start)
-#                 asm.mov('eax', variables.get(operand1.strip(), operand1.strip()))
-#                 asm.cmp('eax', variables.get(operand2.strip(), operand2.strip()))
-#                 if operator == '>':
-#                     asm.jle(asm_label_end)
-#                 elif operator == '>=':
-#                     asm.jl(asm_label_end)
-#                 elif operator == '<':
-#                     asm.jge(asm_label_end)
-#                 elif operator == '<=':
-#                     asm.jg(asm_label_end)
-#                 asm.jmp(asm_label_start)
-#                 asm.bind_label(asm_label_end)
-#             asm.bind_label(asm_label)
-#     return asm.get_machine_code()
 
 
 variables, instructions = parse_hlc_code(hlc)
