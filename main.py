@@ -173,7 +173,6 @@ HLC_program = []
 csv_title = ["HLC instruction", "YMC Address", "YMC assembly", "YMC encoding",
              "Modified registers (if any, after execution)", "Modified flags (if any, after execution)"]
 HLC_program.append(csv_title)
-counter = 0
 
 
 def check_variables(variable_code):
@@ -195,13 +194,17 @@ def check_ymc_code(ymc_code):
 
 
 def parse_hlc_code(hlc_code):
-    # # Start with 0. Mark it as 1 if found while. Until finished mark it as 0
-    # loop_flag = 0
+    counter = 0
     # Start with 0. Mark it as 1 if found while. Until finished mark it as 0
-    global counter
-    jmp_address = 0
-    if_else_flag = 0
-
+    loop_flag = 0
+    loop_jump_address = 0
+    # Start with 0. Mark it as 1 if found while. Until finished mark it as 0
+    if_jump_address = 0
+    else_jump_address = 0
+    if_flag = 0
+    else_flag = 0
+    while_cmp = ""
+    while_instruction = ""
     counter_variable = 1
     for line in hlc_code.split('\n'):
         line = line.strip()
@@ -230,35 +233,93 @@ def parse_hlc_code(hlc_code):
                 mapping[var_name] = "0" + str(counter_variable)
                 counter_variable += 1
         elif line.startswith('if'):
-            if if_else_flag == 1:
+            if if_flag == 1:
                 print("Error: If-else statement is incorrect!")
                 sys.exit()
-            if_else_flag = 1
+            if_flag = 1
+            if else_flag == 1:
+                memory[int(else_jump_address)] =  format(counter, '02x')
+                else_flag = 0
+            if loop_flag == 1:
+                counter = generate_assembly_code("cmp", while_cmp, counter, line)
+                action_jump = while_instruction.split()[0]
+                counter = generate_assembly_code(action_jump, while_instruction, counter, line)
+                loop_flag = 0
             line_if = line.split()
             if len(line_if) == 4 and line_if[2] in relational_operators:
-                # Todo Add here Convert HLC to YMC
-                convert_hlc_ymc.append("add machine code here mark jump address here && change counter")
+                # change when find the first end
+                jmp_address = counter + 4
+                instruction = "cmp " + line_if[1] + " " + line_if[3]
+                counter = generate_assembly_code("cmp", instruction, counter, line)
+                if line_if[2] == relational_operators[0]:
+                    instruction = "jge FF"
+                    counter = generate_assembly_code("jge", instruction, counter, line)
+                elif line_if[2] == relational_operators[1]:
+                    instruction = "jg FF"
+                    counter = generate_assembly_code("jg", instruction, counter, line)
+                elif line_if[2] == relational_operators[2]:
+                    instruction = "jle FF"
+                    counter = generate_assembly_code("jle", instruction, counter, line)
+                elif line_if[2] == relational_operators[3]:
+                    instruction = "jl FF"
+                    counter = generate_assembly_code("jl", instruction, counter, line)
+                elif line_if[2] == relational_operators[4]:
+                    instruction = "jne FF"
+                    counter = generate_assembly_code("jne", instruction, counter, line)
+                elif line_if[2] == relational_operators[5]:
+                    instruction = "je FF"
+                    counter = generate_assembly_code("je", instruction, counter, line)
             else:
                 print("Error: Only one relational operator is allowed in if statements.")
                 sys.exit()
         elif line.startswith('else'):
-            if if_else_flag == 0:
+            if if_flag == 0:
                 print("Error: If-else statement is incorrect!")
                 sys.exit()
-            if_else_flag = 0
+            if else_flag == 1:
+                print("Error: If-else statement is incorrect!")
+                sys.exit()
+            if_flag = 0
+            else_flag = 1
             line_else = line.split()
             if len(line_else) == 1:
-                # Todo Add here Convert HLC to YMC
-                convert_hlc_ymc.append("add machine code here fill the jump address here"
-                                       " with the location + 1 && change counter")
+                memory[int(if_jump_address)] = format((counter + 2), '02x')
+                else_jump_address = counter + 1
+                instruction = "jmp FF"
+                counter = generate_assembly_code("jmp", instruction, counter, line)
             else:
                 print("Error: Else statement is incorrect!")
                 sys.exit()
         elif line.startswith('while'):
+            if if_flag == 1:
+                print("Error: If-else statement is incorrect!")
+                sys.exit()
+            if else_flag == 1:
+                memory[int(else_jump_address)] = format(counter, '02x')
+                else_flag = 0
+            if loop_flag == 1:
+                counter = generate_assembly_code("cmp", while_cmp, counter, line)
+                action_jump = while_instruction.split()[0]
+                counter = generate_assembly_code(action_jump, while_instruction, counter, line)
+                loop_flag = 0
             line_while = line.split()
             if len(line_while) == 4 and line_while[2] in relational_operators:
-                # Todo Add here Convert HLC to YMC
-                convert_hlc_ymc.append("add machine code here fill the jump address here && change counter")
+                loop_flag = 1
+                # change when find the first end
+                loop_jump_address = counter
+                while_cmp = "cmp " + line_while[1] + " " + line_while[3]
+                if line_while[2] == relational_operators[0]:
+                    while_instruction = "jge " + str(loop_jump_address)
+                elif line_while[2] == relational_operators[1]:
+                    while_instruction = "jg " + str(loop_jump_address)
+                elif line_while[2] == relational_operators[2]:
+                    while_instruction = "jle " + str(loop_jump_address)
+                elif line_while[2] == relational_operators[3]:
+                    while_instruction = "jl " + str(loop_jump_address)
+                elif line_while[2] == relational_operators[4]:
+                    while_instruction = "jne " + str(loop_jump_address)
+                elif line_while[2] == relational_operators[5]:
+                    while_instruction = "je " + str(loop_jump_address)
             else:
                 print("Error: Only one relational operator is allowed in if statements.")
                 sys.exit()
