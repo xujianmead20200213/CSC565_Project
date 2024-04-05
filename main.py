@@ -1010,6 +1010,7 @@ def operations(operator_1, operator_2, instruction, variable_type):
     flags['CF'] = result > 255
     return result
 
+
 parse_hlc_code(hlc)
 process_memory_instruction(memory)
 # Write into CSV path
