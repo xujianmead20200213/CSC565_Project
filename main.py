@@ -73,8 +73,12 @@ ymc_to_machine_code = {
     'rrmov': '14',
     'mmmov': '15',
     'cmp': '20',
+    'iaddadd': '40',
+    'iaddsub': '41',
     'iaddmul': '42',
     'iadddiv': '43',
+    'isubadd': '44',
+    'isubsub': '45',
     'isubmul': '46',
     'isubdiv': '47',
     'imuladd': '48',
@@ -105,8 +109,10 @@ ymc_to_machine_code = {
     'sub': '61',
     'mul': '62',
     'div': '63',
-    'imul': '64',
-    'idiv': '65',
+    'iadd': '64',
+    'isub': '65',
+    'imul': '66',
+    'idiv': '67',
     'jmp': '70',
     'jle': '71',
     'jl': '72',
@@ -124,8 +130,12 @@ action_spaces = {
     'rrmov': '3',
     'mmmov': '3',
     'cmp': '3',
+    'iaddadd': '3',
+    'iaddsub': '3',
     'iaddmul': '3',
     'iadddiv': '3',
+    'isubadd': '3',
+    'isubsub': '3',
     'isubmul': '3',
     'isubdiv': '3',
     'imuladd': '3',
@@ -156,6 +166,8 @@ action_spaces = {
     'sub': '2',
     'mul': '2',
     'div': '2',
+    'iadd': '2',
+    'isub': '2',
     'imul': '2',
     'idiv': '2',
     'jmp': '2',
@@ -582,11 +594,11 @@ def parse_hlc_code(hlc_code):
                                     counter = generate_assembly_code("divdiv", instruction, counter, line)
                             else:
                                 if right_side[1] == operators[0] and right_side[3] == operators[0]:
-                                    instruction = "addadd ebx ecx"
-                                    counter = generate_assembly_code("addadd", instruction, counter, line)
+                                    instruction = "iaddadd ebx ecx"
+                                    counter = generate_assembly_code("iaddadd", instruction, counter, line)
                                 elif right_side[1] == operators[0] and right_side[3] == operators[1]:
-                                    instruction = "addsub ebx ecx"
-                                    counter = generate_assembly_code("addsub", instruction, counter, line)
+                                    instruction = "iaddsub ebx ecx"
+                                    counter = generate_assembly_code("iaddsub", instruction, counter, line)
                                 elif right_side[1] == operators[0] and right_side[3] == operators[2]:
                                     instruction = "iaddmul ebx ecx"
                                     counter = generate_assembly_code("iaddmul", instruction, counter, line)
@@ -597,11 +609,11 @@ def parse_hlc_code(hlc_code):
                                     instruction = "iadddiv ebx ecx"
                                     counter = generate_assembly_code("iadddiv", instruction, counter, line)
                                 elif right_side[1] == operators[1] and right_side[3] == operators[0]:
-                                    instruction = "subadd ebx ecx"
-                                    counter = generate_assembly_code("subadd", instruction, counter, line)
+                                    instruction = "isubadd ebx ecx"
+                                    counter = generate_assembly_code("isubadd", instruction, counter, line)
                                 elif right_side[1] == operators[1] and right_side[3] == operators[1]:
-                                    instruction = "subsub ebx ecx"
-                                    counter = generate_assembly_code("subsub", instruction, counter, line)
+                                    instruction = "isubsub ebx ecx"
+                                    counter = generate_assembly_code("isubsub", instruction, counter, line)
                                 elif right_side[1] == operators[1] and right_side[3] == operators[2]:
                                     instruction = "isubmul ebx ecx"
                                     counter = generate_assembly_code("isubmul", instruction, counter, line)
@@ -799,6 +811,7 @@ def process_memory_instruction(memory_instruction):
             new_machine_code = memory_instruction[pointer]
             machine_code = machine_code + " " + str(new_machine_code)
             instruction.append(new_machine_code)
+        pointer += 1
         pointer = process_function(action, instruction, pointer)
         save_csv_file(hlc_mapping_ymc[action_start], action_start,
                       convert_hlc_ymc[action_start], machine_code, registers, flags)
@@ -846,56 +859,152 @@ def process_function(action, instruction, counter_c):
         else:
             flags['SF'] = 0
             flags['ZF'] = 0
+    elif action == 'iaddadd':
+        registers['eax'] = operations('+', '+', instruction, 0)
+    elif action == 'iaddsub':
+        registers['eax'] = operations('+', '-', instruction, 0)
     elif action == 'iaddmul':
-        return '42'
+        registers['eax'] = operations('+', '*', instruction, 0)
     elif action == 'iadddiv':
-        return '43'
-    # Add more cases as needed
-    # 'isubmul': '46',
-    # 'isubdiv': '47',
-    # 'imuladd': '48',
-    # 'imulsub': '49',
-    # 'imulmul': '4A',
-    # 'imuldiv': '4B',
-    # 'idivadd': '4C',
-    # 'idivsub': '4D',
-    # 'idivmul': '4E',
-    # 'idivdiv': '4F',
-    # 'addadd': '50',
-    # 'addsub': '51',
-    # 'addmul': '52',
-    # 'adddiv': '53',
-    # 'subadd': '54',
-    # 'subsub': '55',
-    # 'submul': '56',
-    # 'subdiv': '57',
-    # 'muladd': '58',
-    # 'mulsub': '59',
-    # 'mulmul': '5A',
-    # 'muldiv': '5B',
-    # 'divadd': '5C',
-    # 'divsub': '5D',
-    # 'divmul': '5E',
-    # 'divdiv': '5F',
-    # 'add': '60',
-    # 'sub': '61',
-    # 'mul': '62',
-    # 'div': '63',
-    # 'imul': '64',
-    # 'idiv': '65',
-    # 'jmp': '70',
-    # 'jle': '71',
-    # 'jl': '72',
-    # 'je': '73',
-    # 'jne': '74',
-    # 'jge': '75',
-    # 'jg': '76',
-    # 'call': '90'
+        registers['eax'] = operations('+', '/', instruction, 0)
+    elif action == 'isubadd':
+        registers['eax'] = operations('-', '+', instruction, 0)
+    elif action == 'isubsub':
+        registers['eax'] = operations('-', '-', instruction, 0)
+    elif action == 'isubmul':
+        registers['eax'] = operations('-', '*', instruction, 0)
+    elif action == 'isubdiv':
+        registers['eax'] = operations('-', '/', instruction, 0)
+    elif action == 'imuladd':
+        registers['eax'] = operations('*', '+', instruction, 0)
+    elif action == 'imulsub':
+        registers['eax'] = operations('*', '-', instruction, 0)
+    elif action == 'imulmul':
+        registers['eax'] = operations('*', '*', instruction, 0)
+    elif action == 'imuldiv':
+        registers['eax'] = operations('*', '/', instruction, 0)
+    elif action == 'idivadd':
+        registers['eax'] = operations('/', '+', instruction, 0)
+    elif action == 'idivsub':
+        registers['eax'] = operations('/', '-', instruction, 0)
+    elif action == 'idivmul':
+        registers['eax'] = operations('/', '*', instruction, 0)
+    elif action == 'idivdiv':
+        registers['eax'] = operations('/', '/', instruction, 0)
+    elif action == 'addadd':
+        registers['eax'] = operations('+', '+', instruction, 1)
+    elif action == 'addsub':
+        registers['eax'] = operations('+', '-', instruction, 1)
+    elif action == 'addmul':
+        registers['eax'] = operations('+', '*', instruction, 1)
+    elif action == 'adddiv':
+        registers['eax'] = operations('+', '/', instruction, 1)
+    elif action == 'subadd':
+        registers['eax'] = operations('-', '+', instruction, 1)
+    elif action == 'subsub':
+        registers['eax'] = operations('-', '-', instruction, 1)
+    elif action == 'submul':
+        registers['eax'] = operations('-', '*', instruction, 1)
+    elif action == 'subdiv':
+        registers['eax'] = operations('-', '/', instruction, 1)
+    elif action == 'muladd':
+        registers['eax'] = operations('*', '+', instruction, 1)
+    elif action == 'mulsub':
+        registers['eax'] = operations('*', '-', instruction, 1)
+    elif action == 'mulmul':
+        registers['eax'] = operations('*', '*', instruction, 1)
+    elif action == 'muldiv':
+        registers['eax'] = operations('*', '/', instruction, 1)
+    elif action == 'divadd':
+        registers['eax'] = operations('/', '+', instruction, 1)
+    elif action == 'divsub':
+        registers['eax'] = operations('/', '-', instruction, 1)
+    elif action == 'divmul':
+        registers['eax'] = operations('/', '*', instruction, 1)
+    elif action == 'divdiv':
+        registers['eax'] = operations('/', '/', instruction, 1)
+    elif action == 'add':
+        registers['eax'] = operations('+', None, instruction, 1)
+    elif action == 'sub':
+        registers['eax'] = operations('-', None, instruction, 1)
+    elif action == 'mul':
+        registers['eax'] = operations('×', None, instruction, 1)
+    elif action == 'div':
+        registers['eax'] = operations('/', None, instruction, 1)
+    elif action == 'iadd':
+        registers['eax'] = operations('+', None, instruction, 0)
+    elif action == 'isub':
+        registers['eax'] = operations('-', None, instruction, 0)
+    elif action == 'imul':
+        registers['eax'] = operations('×', None, instruction, 0)
+    elif action == 'idiv':
+        registers['eax'] = operations('/', None, instruction, 0)
+    elif action == 'jmp':
+        counter_c = int(instruction[0], 16)
+    elif action == 'jle':
+        if flags['ZF'] == 1 or (flags['SF'] == 0 and flags['ZF'] == 0):
+            counter_c = int(instruction[0], 16)
+    elif action == 'jl':
+        if flags['SF'] == 0 and flags['ZF'] == 0:
+            counter_c = int(instruction[0], 16)
+    elif action == 'je':
+        if flags['ZF'] == 1:
+            counter_c = int(instruction[0], 16)
+    elif action == 'jne':
+        if flags['ZF'] == 0:
+            counter_c = int(instruction[0], 16)
+    elif action == 'jge':
+        if flags['ZF'] == 1 or (flags['SF'] == 1 and flags['ZF'] == 0):
+            counter_c = int(instruction[0], 16)
+    elif action == 'jg':
+        if flags['SF'] == 1 and flags['ZF'] == 0:
+            counter_c = int(instruction[0], 16)
+    elif action == 'call':
+        variable_key = value_get_key(instruction[0], mapping)
+        if variable_key is not None:
+            print(variable[variable_key])
+        else:
+            print('\n')
     else:
         print("Error: Unknown action.")
         sys.exit()
     return counter_c
 
+
+def operations(operator_1, operator_2, instruction, variable_type):
+    flags['SF'] = 0
+    flags['OF'] = 0
+    flags['ZF'] = 0
+    flags['CF'] = 0
+    # variable_type: 0 signed, 1 unsigned
+    if operator_2 is not None:
+        value_1 = int(registers['eax'], 16)
+        register_2 = value_get_key(instruction[0], mapping)
+        value_2 = int(registers[register_2], 16)
+        register_3 = value_get_key(instruction[1], mapping)
+        value_3 = int(registers[register_3], 16)
+        if variable_type == 1:
+            value_1 = value_1 & 0xFF
+            value_2 = value_2 & 0xFF
+            value_3 = value_3 & 0xFF
+        result = eval(f"{value_1} {operator_1} {value_2} {operator_2} {value_3}")
+    else:
+        value_1 = int(registers['eax'], 16)
+        register_2 = value_get_key(instruction[0], mapping)
+        value_2 = int(registers[register_2], 16)
+        if variable_type == 1:
+            value_1 = value_1 & 0xFF
+            value_2 = value_2 & 0xFF
+        result = eval(f"{value_1} {operator_1} {value_2}")
+    # Flags
+    flags['SF'] = result < 0
+    if variable_type == 0:
+        max_value = 2 ** (8 * result.bit_length() - 1) - 1
+        min_value = -max_value - 1
+        flags['OF'] = result > max_value or result < min_value
+    flags['ZF'] = result == 0
+    flags['CF'] = result > 255
+    return result
 
 parse_hlc_code(hlc)
 process_memory_instruction(memory)
