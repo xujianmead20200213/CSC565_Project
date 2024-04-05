@@ -744,11 +744,13 @@ def generate_assembly_code(action, instruction, counter_c, hlc_code_line):
     # elif action == 'mmmov':
     #
     # elif action == 'cmp':
-    #
+    # 'iaddadd':
+    # 'iaddsub':
     # elif action == 'iaddmul':
     #
     # elif action == 'iadddiv':
-    # Add more cases as needed
+    # 'isubadd':
+    # 'isubsub':
     # 'isubmul': '46',
     # 'isubdiv': '47',
     # 'imuladd': '48',
@@ -779,6 +781,8 @@ def generate_assembly_code(action, instruction, counter_c, hlc_code_line):
     # 'sub': '61',
     # 'mul': '62',
     # 'div': '63',
+    # 'iadd': '60',
+    # 'isub': '61',
     # 'imul': '64',
     # 'idiv': '65',
     # 'jmp': '70',
