@@ -38,8 +38,8 @@ unsigned_array = {}
 # signed_array = {'x': ctypes.c_int8(0), 'y': ctypes.c_int8(0), 'z': ctypes.c_int8(0)}
 signed_array = {}
 # Define an array with 8-bit wide registers
-registers = {'eax': ctypes.c_int8(0), 'ebx': ctypes.c_int8(0), 'ecx': ctypes.c_int8(0), 'edx': ctypes.c_int8(0)}
-flags = {'SF': ctypes.c_int8(0), 'OF': ctypes.c_int8(0), 'ZF': ctypes.c_int8(0), 'CF': ctypes.c_int8(0)}
+registers = {'eax': format(0, '02x'), 'ebx': format(0, '02x'), 'ecx': format(0, '02x'), 'edx': format(0, '02x')}
+flags = {'SF': 0, 'OF': 0, 'ZF': 0, 'CF': 0}
 if_count = 0
 while_count = 0
 relational_operators = ['<', '<=', '>', '>=', '==', '!=']
@@ -683,7 +683,7 @@ def check_formula(expr):
         return expr.split()
 
 
-def value_get_key(value_find,mapper_find):
+def value_get_key(value_find, mapper_find):
     key_find = [key for key, value in mapper_find.items() if value == value_find]
     return key_find
 
@@ -778,15 +778,15 @@ def generate_assembly_code(action, instruction, counter_c, hlc_code_line):
     # 'jg': '76',
     # 'call': '90'
 
-    # else:
-    #     print("Error: Unknown action.")
-    #     sys.exit()
+    else:
+        print("Error: Unknown action.")
+        sys.exit()
     return counter_c
 
 
 def process_memory_instruction(memory_instruction):
     pointer = 0
-    while len(memory_instruction) < pointer:
+    while len(memory_instruction) > pointer:
         machine_code = memory_instruction[pointer]
         action = value_get_key(machine_code, ymc_to_machine_code)
         action_space = action_spaces.get(action)
@@ -799,30 +799,53 @@ def process_memory_instruction(memory_instruction):
             new_machine_code = memory_instruction[pointer]
             machine_code = machine_code + " " + str(new_machine_code)
             instruction.append(new_machine_code)
-        process_function(action, instruction)
+        pointer = process_function(action, instruction, pointer)
         save_csv_file(hlc_mapping_ymc[action_start], action_start,
                       convert_hlc_ymc[action_start], machine_code, registers, flags)
 
 
-def process_function(action, instruction):
+def process_function(action, instruction, counter_c):
     if action == 'vrmov':
         value = instruction[0]
         register = value_get_key(instruction[1], mapping)
         registers[register] = value
-        # flag changes like ZF,OF,CF,SF
-        # All register changes
     elif action == 'vmmov':
-        return '11'
+        value = instruction[0]
+        variable_key = value_get_key(instruction[1], mapping)
+        variable[variable_key] = value
     elif action == 'rmmov':
-        return '12'
+        register = value_get_key(instruction[0], mapping)
+        value = registers[register]
+        variable_key = value_get_key(instruction[1], mapping)
+        variable[variable_key] = value
     elif action == 'mrmov':
-        return '13'
+        variable_key = value_get_key(instruction[0], mapping)
+        value = variable[variable_key]
+        register = value_get_key(instruction[1], mapping)
+        registers[register] = value
     elif action == 'rrmov':
-        return '14'
+        register = value_get_key(instruction[0], mapping)
+        value = registers[register]
+        register = value_get_key(instruction[1], mapping)
+        registers[register] = value
     elif action == 'mmmov':
-        return '15'
+        variable_key = value_get_key(instruction[0], mapping)
+        value = variable[variable_key]
+        variable_key = value_get_key(instruction[1], mapping)
+        variable[variable_key] = value
     elif action == 'cmp':
-        return '20'
+        variable_key = value_get_key(instruction[0], mapping)
+        value = int(variable[variable_key], 16)
+        cmp_value = int(instruction[1], 16)
+        new_value = value - cmp_value
+        if new_value == 0:
+            flags['ZF'] = 1
+        elif new_value > 0:
+            flags['SF'] = 1
+            flags['ZF'] = 0
+        else:
+            flags['SF'] = 0
+            flags['ZF'] = 0
     elif action == 'iaddmul':
         return '42'
     elif action == 'iadddiv':
@@ -871,6 +894,7 @@ def process_function(action, instruction):
     else:
         print("Error: Unknown action.")
         sys.exit()
+    return counter_c
 
 
 parse_hlc_code(hlc)
