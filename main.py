@@ -269,13 +269,18 @@ def parse_hlc_code(hlc_code):
                 if len(right_side) > 0:
                     if len(right_side) == 1:
                         right_type = variable.get(right_side[0])
-                        if right_type is not None and isinstance(type(left_type), type(right_type)):
+                        if right_type is not None and type(left_type) != type(right_type):
                             print(f"Error: Inconsistent variable types for '{var}' and '{right_side[0]}'")
                             sys.exit()
                         else:
-                            # Todo Add here
-                            instruction = "vrmov " + right_side[0] + " eax"
-                            counter = generate_assembly_code("vrmov", instruction, counter, line)
+                            if right_type is not None:
+                                instruction = "mrmov " + right_side[0] + " eax"
+                                counter = generate_assembly_code("mrmov", instruction, counter, line)
+                            else:
+                                instruction = "vrmov " + right_side[0] + " eax"
+                                counter = generate_assembly_code("vrmov", instruction, counter, line)
+                            instruction = "rmmov eax " + var
+                            counter = generate_assembly_code("rmmov", instruction, counter, line)
                     elif len(right_side) == 2 or len(right_side) == 4 or len(right_side) > 5:
                         print(f"Error: The formular is incorrect!")
                         sys.exit()
@@ -291,15 +296,86 @@ def parse_hlc_code(hlc_code):
                         if right_side[1] not in operators:
                             print(f"Error: The formular is incorrect!")
                             sys.exit()
-                        elif ((right_type_1 is not None and isinstance(type(left_type), type(right_type_1)))
-                              or (right_type_2 is not None and  isinstance(type(left_type), type(right_type_2)))):
+                        elif ((right_type_1 is not None and type(left_type) != type(right_type_1))
+                              or (right_type_2 is not None and type(left_type) != type(right_type_2))):
                             print(f"Error: Inconsistent variable types for"
                                   f" '{var}' and '{right_side[0]}' or '{right_side[2]}'")
                             sys.exit()
                         else:
-                            # Todo Add heres
-                            instruction = "vrmov "+right_side[0]+" eax"
-                            counter = generate_assembly_code("vrmov", instruction, counter, line)
+                            if right_type_1 is not None:
+                                instruction = "mrmov " + right_side[0] + " eax"
+                                counter = generate_assembly_code("mrmov", instruction, counter, line)
+                            else:
+                                instruction = "vrmov " + right_side[0] + " eax"
+                                counter = generate_assembly_code("vrmov", instruction, counter, line)
+                            if right_type_2 is not None:
+                                instruction = "mrmov " + right_side[2] + " ebx"
+                                counter = generate_assembly_code("mrmov", instruction, counter, line)
+                            else:
+                                instruction = "vrmov " + right_side[2] + " ebx"
+                                counter = generate_assembly_code("vrmov", instruction, counter, line)
+                            if var in unsigned_array:
+                                if right_side[1] == operators[0]:
+                                    instruction = "add ebx"
+                                    counter = generate_assembly_code("add", instruction, counter, line)
+                                elif right_side[1] == operators[1]:
+                                    instruction = "sub ebx"
+                                    counter = generate_assembly_code("sub", instruction, counter, line)
+                                elif right_side[1] == operators[2]:
+                                    instruction = "mul ebx"
+                                    counter = generate_assembly_code("mul", instruction, counter, line)
+                                elif right_side[1] == operators[3]:
+                                    if right_side[2] == 0:
+                                        print(f"Error: The formular can divided by Zero!")
+                                        sys.exit()
+                                    instruction = "div ebx"
+                                    counter = generate_assembly_code("div", instruction, counter, line)
+                            if right_type_1 is not None:
+                                instruction = "mrmov " + right_side[0] + " eax"
+                                counter = generate_assembly_code("mrmov", instruction, counter, line)
+                            else:
+                                instruction = "vrmov " + right_side[0] + " eax"
+                                counter = generate_assembly_code("vrmov", instruction, counter, line)
+                            if right_type_2 is not None:
+                                instruction = "mrmov " + right_side[2] + " ebx"
+                                counter = generate_assembly_code("mrmov", instruction, counter, line)
+                            else:
+                                instruction = "vrmov " + right_side[2] + " ebx"
+                                counter = generate_assembly_code("vrmov", instruction, counter, line)
+                            if var in unsigned_array:
+                                if right_side[1] == operators[0]:
+                                    instruction = "add ebx"
+                                    counter = generate_assembly_code("add", instruction, counter, line)
+                                elif right_side[1] == operators[1]:
+                                    instruction = "sub ebx"
+                                    counter = generate_assembly_code("sub", instruction, counter, line)
+                                elif right_side[1] == operators[2]:
+                                    instruction = "mul ebx"
+                                    counter = generate_assembly_code("mul", instruction, counter, line)
+                                elif right_side[1] == operators[3]:
+                                    if right_side[2] == 0:
+                                        print(f"Error: The formular can divided by Zero!")
+                                        sys.exit()
+                                    instruction = "div ebx"
+                                    counter = generate_assembly_code("div", instruction, counter, line)
+                            else:
+                                if right_side[1] == operators[0]:
+                                    instruction = "add ebx"
+                                    counter = generate_assembly_code("add", instruction, counter, line)
+                                elif right_side[1] == operators[1]:
+                                    instruction = "sub ebx"
+                                    counter = generate_assembly_code("sub", instruction, counter, line)
+                                elif right_side[1] == operators[2]:
+                                    instruction = "imul ebx"
+                                    counter = generate_assembly_code("imul", instruction, counter, line)
+                                elif right_side[1] == operators[3]:
+                                    if right_side[2] == 0:
+                                        print(f"Error: The formular can divided by Zero!")
+                                        sys.exit()
+                                    instruction = "idiv ebx"
+                                    counter = generate_assembly_code("idiv", instruction, counter, line)
+                            instruction = "rmmov eax " + var
+                            counter = generate_assembly_code("rmmov", instruction, counter, line)
                     elif len(right_side) == 5:
                         right_type_1 = variable.get(right_side[0])
                         right_type_2 = variable.get(right_side[2])
@@ -316,15 +392,179 @@ def parse_hlc_code(hlc_code):
                         if right_side[1] not in operators or right_side[3] not in operators:
                             print(f"Error: The formular is incorrect!")
                             sys.exit()
-                        elif ((right_type_1 is not None and isinstance(type(left_type), type(right_type_1)))
-                              or (right_type_2 is not None and isinstance(type(left_type), type(right_type_2)))
-                              or (right_type_3 is not None and isinstance(type(left_type), type(right_type_3)))):
+                        elif ((right_type_1 is not None and type(left_type) != type(right_type_1))
+                              or (right_type_2 is not None and type(left_type) != type(right_type_2))
+                              or (right_type_3 is not None and type(left_type) != type(right_type_3))):
                             print(f"Error: Inconsistent variable types for"
                                   f" '{var}' and '{right_side[0]}' or '{right_side[2]}' or '{right_side[4]}'")
                             sys.exit()
                         else:
-                            instruction = "vrmov " + right_side[0] + " eax"
-                            counter = generate_assembly_code("vrmov", instruction, counter, line)
+                            if right_type_1 is not None:
+                                instruction = "mrmov " + right_side[0] + " eax"
+                                counter = generate_assembly_code("mrmov", instruction, counter, line)
+                            else:
+                                instruction = "vrmov " + right_side[0] + " eax"
+                                counter = generate_assembly_code("vrmov", instruction, counter, line)
+                            if right_type_2 is not None:
+                                instruction = "mrmov " + right_side[2] + " ebx"
+                                counter = generate_assembly_code("mrmov", instruction, counter, line)
+                            else:
+                                instruction = "vrmov " + right_side[2] + " ebx"
+                                counter = generate_assembly_code("vrmov", instruction, counter, line)
+                            if right_type_3 is not None:
+                                instruction = "mrmov " + right_side[4] + " ecx"
+                                counter = generate_assembly_code("mrmov", instruction, counter, line)
+                            else:
+                                instruction = "vrmov " + right_side[4] + " ecx"
+                                counter = generate_assembly_code("vrmov", instruction, counter, line)
+                            if var in unsigned_array:
+                                if right_side[1] == operators[0] and right_side[3] == operators[0]:
+                                    instruction = "addadd ebx ecx"
+                                    counter = generate_assembly_code("addadd", instruction, counter, line)
+                                elif right_side[1] == operators[0] and right_side[3] == operators[1]:
+                                    instruction = "addsub ebx ecx"
+                                    counter = generate_assembly_code("addsub", instruction, counter, line)
+                                elif right_side[1] == operators[0] and right_side[3] == operators[2]:
+                                    instruction = "addmul ebx ecx"
+                                    counter = generate_assembly_code("addmul", instruction, counter, line)
+                                elif right_side[1] == operators[0] and right_side[3] == operators[3]:
+                                    if right_side[4] == 0:
+                                        print(f"Error: The formular can divided by Zero!")
+                                        sys.exit()
+                                    instruction = "adddiv ebx ecx"
+                                    counter = generate_assembly_code("adddiv", instruction, counter, line)
+                                elif right_side[1] == operators[1] and right_side[3] == operators[0]:
+                                    instruction = "subadd ebx ecx"
+                                    counter = generate_assembly_code("subadd", instruction, counter, line)
+                                elif right_side[1] == operators[1] and right_side[3] == operators[1]:
+                                    instruction = "subsub ebx ecx"
+                                    counter = generate_assembly_code("subsub", instruction, counter, line)
+                                elif right_side[1] == operators[1] and right_side[3] == operators[2]:
+                                    instruction = "submul ebx ecx"
+                                    counter = generate_assembly_code("submul", instruction, counter, line)
+                                elif right_side[1] == operators[1] and right_side[3] == operators[3]:
+                                    if right_side[4] == 0:
+                                        print(f"Error: The formular can divided by Zero!")
+                                        sys.exit()
+                                    instruction = "subdiv ebx ecx"
+                                    counter = generate_assembly_code("subdiv", instruction, counter, line)
+                                elif right_side[1] == operators[2] and right_side[3] == operators[0]:
+                                    instruction = "muladd ebx ecx"
+                                    counter = generate_assembly_code("muladd", instruction, counter, line)
+                                elif right_side[1] == operators[2] and right_side[3] == operators[1]:
+                                    instruction = "mulsub ebx ecx"
+                                    counter = generate_assembly_code("mulsub", instruction, counter, line)
+                                elif right_side[1] == operators[2] and right_side[3] == operators[2]:
+                                    instruction = "mulmul ebx ecx"
+                                    counter = generate_assembly_code("mulmul", instruction, counter, line)
+                                elif right_side[1] == operators[2] and right_side[3] == operators[3]:
+                                    if right_side[4] == 0:
+                                        print(f"Error: The formular can divided by Zero!")
+                                        sys.exit()
+                                    instruction = "muldiv ebx ecx"
+                                    counter = generate_assembly_code("muldiv", instruction, counter, line)
+                                elif right_side[1] == operators[3] and right_side[3] == operators[0]:
+                                    if right_side[2] == 0:
+                                        print(f"Error: The formular can divided by Zero!")
+                                        sys.exit()
+                                    instruction = "divadd ebx ecx"
+                                    counter = generate_assembly_code("divadd", instruction, counter, line)
+                                elif right_side[1] == operators[3] and right_side[3] == operators[1]:
+                                    if right_side[2] == 0:
+                                        print(f"Error: The formular can divided by Zero!")
+                                        sys.exit()
+                                    instruction = "divsub ebx ecx"
+                                    counter = generate_assembly_code("divsub", instruction, counter, line)
+                                elif right_side[1] == operators[3] and right_side[3] == operators[2]:
+                                    if right_side[2] == 0:
+                                        print(f"Error: The formular can divided by Zero!")
+                                        sys.exit()
+                                    instruction = "divmul ebx ecx"
+                                    counter = generate_assembly_code("divmul", instruction, counter, line)
+                                elif right_side[1] == operators[3] and right_side[3] == operators[3]:
+                                    if right_side[2] == 0:
+                                        print(f"Error: The formular can divided by Zero!")
+                                        sys.exit()
+                                    if right_side[4] == 0:
+                                        print(f"Error: The formular can divided by Zero!")
+                                        sys.exit()
+                                    instruction = "divdiv ebx ecx"
+                                    counter = generate_assembly_code("divdiv", instruction, counter, line)
+                            else:
+                                if right_side[1] == operators[0] and right_side[3] == operators[0]:
+                                    instruction = "addadd ebx ecx"
+                                    counter = generate_assembly_code("addadd", instruction, counter, line)
+                                elif right_side[1] == operators[0] and right_side[3] == operators[1]:
+                                    instruction = "addsub ebx ecx"
+                                    counter = generate_assembly_code("addsub", instruction, counter, line)
+                                elif right_side[1] == operators[0] and right_side[3] == operators[2]:
+                                    instruction = "iaddmul ebx ecx"
+                                    counter = generate_assembly_code("iaddmul", instruction, counter, line)
+                                elif right_side[1] == operators[0] and right_side[3] == operators[3]:
+                                    if right_side[4] == 0:
+                                        print(f"Error: The formular can divided by Zero!")
+                                        sys.exit()
+                                    instruction = "iadddiv ebx ecx"
+                                    counter = generate_assembly_code("iadddiv", instruction, counter, line)
+                                elif right_side[1] == operators[1] and right_side[3] == operators[0]:
+                                    instruction = "subadd ebx ecx"
+                                    counter = generate_assembly_code("subadd", instruction, counter, line)
+                                elif right_side[1] == operators[1] and right_side[3] == operators[1]:
+                                    instruction = "subsub ebx ecx"
+                                    counter = generate_assembly_code("subsub", instruction, counter, line)
+                                elif right_side[1] == operators[1] and right_side[3] == operators[2]:
+                                    instruction = "isubmul ebx ecx"
+                                    counter = generate_assembly_code("isubmul", instruction, counter, line)
+                                elif right_side[1] == operators[1] and right_side[3] == operators[3]:
+                                    if right_side[4] == 0:
+                                        print(f"Error: The formular can divided by Zero!")
+                                        sys.exit()
+                                    instruction = "isubdiv ebx ecx"
+                                    counter = generate_assembly_code("isubdiv", instruction, counter, line)
+                                elif right_side[1] == operators[2] and right_side[3] == operators[0]:
+                                    instruction = "imuladd ebx ecx"
+                                    counter = generate_assembly_code("imuladd", instruction, counter, line)
+                                elif right_side[1] == operators[2] and right_side[3] == operators[1]:
+                                    instruction = "imulsub ebx ecx"
+                                    counter = generate_assembly_code("imulsub", instruction, counter, line)
+                                elif right_side[1] == operators[2] and right_side[3] == operators[2]:
+                                    instruction = "imulmul ebx ecx"
+                                    counter = generate_assembly_code("imulmul", instruction, counter, line)
+                                elif right_side[1] == operators[2] and right_side[3] == operators[3]:
+                                    if right_side[4] == 0:
+                                        print(f"Error: The formular can divided by Zero!")
+                                        sys.exit()
+                                    instruction = "imuldiv ebx ecx"
+                                    counter = generate_assembly_code("imuldiv", instruction, counter, line)
+                                elif right_side[1] == operators[3] and right_side[3] == operators[0]:
+                                    if right_side[2] == 0:
+                                        print(f"Error: The formular can divided by Zero!")
+                                        sys.exit()
+                                    instruction = "idivadd ebx ecx"
+                                    counter = generate_assembly_code("idivadd", instruction, counter, line)
+                                elif right_side[1] == operators[3] and right_side[3] == operators[1]:
+                                    if right_side[2] == 0:
+                                        print(f"Error: The formular can divided by Zero!")
+                                        sys.exit()
+                                    instruction = "idivsub ebx ecx"
+                                    counter = generate_assembly_code("idivsub", instruction, counter, line)
+                                elif right_side[1] == operators[3] and right_side[3] == operators[2]:
+                                    if right_side[2] == 0:
+                                        print(f"Error: The formular can divided by Zero!")
+                                        sys.exit()
+                                    instruction = "idivmul ebx ecx"
+                                    counter = generate_assembly_code("idivmul", instruction, counter, line)
+                                elif right_side[1] == operators[3] and right_side[3] == operators[3]:
+                                    if right_side[2] == 0:
+                                        print(f"Error: The formular can divided by Zero!")
+                                        sys.exit()
+                                    if right_side[4] == 0:
+                                        print(f"Error: The formular can divided by Zero!")
+                                        sys.exit()
+                                    instruction = "idivdiv ebx ecx"
+                                    counter = generate_assembly_code("idivdiv", instruction, counter, line)
+                            instruction = "rmmov eax " + var
+                            counter = generate_assembly_code("rmmov", instruction, counter, line)
                 else:
                     print(f"Error: Nothing on the right side!")
                     sys.exit()
