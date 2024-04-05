@@ -806,11 +806,11 @@ def process_memory_instruction(memory_instruction):
 
 def process_function(action, instruction, counter_c):
     if action == 'vrmov':
-        value = instruction[0]
+        value = format(instruction[0], '02x')
         register = value_get_key(instruction[1], mapping)
         registers[register] = value
     elif action == 'vmmov':
-        value = instruction[0]
+        value = format(instruction[0], '02x')
         variable_key = value_get_key(instruction[1], mapping)
         variable[variable_key] = value
     elif action == 'rmmov':
