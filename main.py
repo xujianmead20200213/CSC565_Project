@@ -1,4 +1,5 @@
 import ctypes
+import glob
 import sys
 import csv
 from ctypes import c_int8
@@ -172,6 +173,7 @@ HLC_program = []
 csv_title = ["HLC instruction", "YMC Address", "YMC assembly", "YMC encoding",
              "Modified registers (if any, after execution)", "Modified flags (if any, after execution)"]
 HLC_program.append(csv_title)
+counter = 0
 
 
 def check_variables(variable_code):
@@ -196,9 +198,10 @@ def parse_hlc_code(hlc_code):
     # # Start with 0. Mark it as 1 if found while. Until finished mark it as 0
     # loop_flag = 0
     # Start with 0. Mark it as 1 if found while. Until finished mark it as 0
+    global counter
     jmp_address = 0
     if_else_flag = 0
-    counter = 0
+
     counter_variable = 1
     for line in hlc_code.split('\n'):
         line = line.strip()
@@ -593,8 +596,10 @@ def save_csv_file(register_v, flag_v, hlc_code, memory_address, ymc_code, ymc_en
 
 
 def generate_assembly_code(action, instruction, counter_c, hlc_code_line):
+    counter_c = int(counter_c)
     if action == 'vrmov':
         # split the instruction
+        instruction = instruction.strip()
         var_list = instruction.split()
         # put the first instruction into memory according to table is the action like vrmov
         memory[counter_c] = ymc_to_machine_code.get(var_list[0])
@@ -618,22 +623,21 @@ def generate_assembly_code(action, instruction, counter_c, hlc_code_line):
         counter_c += 1
         convert_hlc_ymc.append(instruction)
         hlc_mapping_ymc.append(hlc_code_line)
-    elif action == 'vmmov':
-        return '11'
-    elif action == 'rmmov':
-        return '12'
-    elif action == 'mrmov':
-        return '13'
-    elif action == 'rrmov':
-        return '14'
-    elif action == 'mmmov':
-        return '15'
-    elif action == 'cmp':
-        return '20'
-    elif action == 'iaddmul':
-        return '42'
-    elif action == 'iadddiv':
-        return '43'
+    # elif action == 'vmmov':
+    #
+    # elif action == 'rmmov':
+    #
+    # elif action == 'mrmov':
+    #
+    # elif action == 'rrmov':
+    #
+    # elif action == 'mmmov':
+    #
+    # elif action == 'cmp':
+    #
+    # elif action == 'iaddmul':
+    #
+    # elif action == 'iadddiv':
     # Add more cases as needed
     # 'isubmul': '46',
     # 'isubdiv': '47',
@@ -676,9 +680,9 @@ def generate_assembly_code(action, instruction, counter_c, hlc_code_line):
     # 'jg': '76',
     # 'call': '90'
 
-    else:
-        print("Error: Unknown action.")
-        sys.exit()
+    # else:
+    #     print("Error: Unknown action.")
+    #     sys.exit()
     return counter_c
 
 
