@@ -666,7 +666,6 @@ def parse_hlc_code(hlc_code):
         if else_flag == 1:
             memory[int(else_jump_address)] = format(counter, '02x')
         if loop_flag == 1:
-            counter = generate_assembly_code("cmp", while_cmp, counter, line)
             action_jump = while_instruction.split()[0]
             counter = generate_assembly_code(action_jump, while_instruction, counter, line)
             memory[int(loop_jump_address)] = format(counter, '02x')
