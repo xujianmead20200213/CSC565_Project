@@ -1,9 +1,7 @@
 import ctypes
-import glob
 import sys
 import csv
-from ctypes import c_int8
-from typing import Dict
+import re
 
 # High Level Code
 hlc = """
@@ -25,9 +23,9 @@ else
 
 while y > 0
     print y
-    print \n
+    print \\n
     print x
-    print \n
+    print \\n
     y = y - 1 
 """
 
@@ -63,7 +61,7 @@ mapping = {
     'SF': '0D',
     'ZF': '0E',
     '__$EncStackInitStart': 'A0',
-    '\n': '0F'
+    '\\n': '0F'
 }
 # Define the mapping between YMC instructions and machine code
 ymc_to_machine_code = {
@@ -220,7 +218,8 @@ def parse_hlc_code(hlc_code):
     while_instruction = ""
     while_start_address = 0
     counter_variable = 1
-    for line in hlc_code.split('\n'):
+    lines = re.split(r'(?<!\\)\n', hlc_code)
+    for line in lines:
         line = line.strip()
         if not line:
             continue
@@ -248,8 +247,8 @@ def parse_hlc_code(hlc_code):
                 counter_variable += 1
         elif line.startswith('print'):
             line_print = line.split()
-            instruction = "print " + line_print[1]
-            counter = generate_assembly_code("print", instruction, counter, line)
+            instruction = "call " + str(line_print[1])
+            counter = generate_assembly_code("call", instruction, counter, line)
         elif line.startswith('if'):
             if if_flag == 1:
                 print("Error: If-else statement is incorrect!")
@@ -270,22 +269,22 @@ def parse_hlc_code(hlc_code):
                 instruction = "cmp " + line_if[1] + " " + line_if[3]
                 counter = generate_assembly_code("cmp", instruction, counter, line)
                 if line_if[2] == relational_operators[0]:
-                    instruction = "jge FF"
+                    instruction = "jge 0"
                     counter = generate_assembly_code("jge", instruction, counter, line)
                 elif line_if[2] == relational_operators[1]:
-                    instruction = "jg FF"
+                    instruction = "jg 0"
                     counter = generate_assembly_code("jg", instruction, counter, line)
                 elif line_if[2] == relational_operators[2]:
-                    instruction = "jle FF"
+                    instruction = "jle 0"
                     counter = generate_assembly_code("jle", instruction, counter, line)
                 elif line_if[2] == relational_operators[3]:
-                    instruction = "jl FF"
+                    instruction = "jl 0"
                     counter = generate_assembly_code("jl", instruction, counter, line)
                 elif line_if[2] == relational_operators[4]:
-                    instruction = "jne FF"
+                    instruction = "jne 0"
                     counter = generate_assembly_code("jne", instruction, counter, line)
                 elif line_if[2] == relational_operators[5]:
-                    instruction = "je FF"
+                    instruction = "je 0"
                     counter = generate_assembly_code("je", instruction, counter, line)
             else:
                 print("Error: Only one relational operator is allowed in if statements.")
@@ -303,7 +302,7 @@ def parse_hlc_code(hlc_code):
             if len(line_else) == 1:
                 memory[int(if_jump_address)] = format((counter + 2), '02x')
                 else_jump_address = counter + 1
-                instruction = "jmp FF"
+                instruction = "jmp 0"
                 counter = generate_assembly_code("jmp", instruction, counter, line)
             else:
                 print("Error: Else statement is incorrect!")
@@ -328,22 +327,22 @@ def parse_hlc_code(hlc_code):
                 instruction = "cmp " + line_while[1] + " " + line_while[3]
                 counter = generate_assembly_code("cmp", instruction, counter, line)
                 if line_while[2] == relational_operators[0]:
-                    instruction = "jge FF"
+                    instruction = "jge 0"
                     counter = generate_assembly_code("jge", instruction, counter, line)
                 elif line_while[2] == relational_operators[1]:
-                    instruction = "jg FF"
+                    instruction = "jg 0"
                     counter = generate_assembly_code("jg", instruction, counter, line)
                 elif line_while[2] == relational_operators[2]:
-                    instruction = "jle FF"
+                    instruction = "jle 0"
                     counter = generate_assembly_code("jle", instruction, counter, line)
                 elif line_while[2] == relational_operators[3]:
-                    instruction = "jl FF"
+                    instruction = "jl 0"
                     counter = generate_assembly_code("jl", instruction, counter, line)
                 elif line_while[2] == relational_operators[4]:
-                    instruction = "jne FF"
+                    instruction = "jne 0"
                     counter = generate_assembly_code("jne", instruction, counter, line)
                 elif line_while[2] == relational_operators[5]:
-                    instruction = "je FF"
+                    instruction = "je 0"
                     counter = generate_assembly_code("je", instruction, counter, line)
                 # change when find the first end
                 while_instruction = "jmp " + str(while_start_address)
@@ -684,7 +683,7 @@ def check_formula(expr):
 
 
 def value_get_key(value_find, mapper_find):
-    key_find = [key for key, value in mapper_find.items() if value == value_find]
+    key_find = next((key for key, value in mapper_find.items() if value == value_find), None)
     return key_find
 
 
@@ -798,7 +797,7 @@ def generate_assembly_code(action, instruction, counter_c, hlc_code_line):
     elif action == 'call':
         counter_c = ymc_to_machine_short(instruction, counter_c, hlc_code_line)
     else:
-        print("Error: Unknown action.")
+        print("Error: First part unknown action." + action)
         sys.exit()
     return counter_c
 
@@ -871,7 +870,12 @@ def process_memory_instruction(memory_instruction):
     while len(memory_instruction) > pointer:
         machine_code = memory_instruction[pointer]
         action = value_get_key(machine_code, ymc_to_machine_code)
-        action_space = action_spaces.get(action)
+        action_space = action_spaces.get(str(action), 'Unknown')
+        if action_space == 'Unknown':
+            print("Error: " + str(action) + " is not defined!")
+        else:
+            return action_space
+        action_space = int(action_space)
         action_start = pointer
         machine_code = str(machine_code)
         instruction = []
@@ -918,8 +922,8 @@ def process_function(action, instruction, counter_c):
         variable[variable_key] = value
     elif action == 'cmp':
         variable_key = value_get_key(instruction[0], mapping)
-        value = int(variable[variable_key], 16)
-        cmp_value = int(instruction[1], 16)
+        value = int(variable[variable_key])
+        cmp_value = int(instruction[1])
         new_value = value - cmp_value
         if new_value == 0:
             flags['ZF'] = 1
@@ -1036,7 +1040,7 @@ def process_function(action, instruction, counter_c):
         else:
             print('\n')
     else:
-        print("Error: Unknown action.")
+        print("Error: Second part unknown action." + action)
         sys.exit()
     return counter_c
 
