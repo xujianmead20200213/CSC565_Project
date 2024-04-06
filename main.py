@@ -257,7 +257,6 @@ def parse_hlc_code(hlc_code):
                 memory[int(else_jump_address)] = format(counter, '02x')
                 else_flag = 0
             if loop_flag == 1:
-                counter = generate_assembly_code("cmp", while_cmp, counter, line)
                 action_jump = while_instruction.split()[0]
                 counter = generate_assembly_code(action_jump, while_instruction, counter, line)
                 memory[int(loop_jump_address)] = format(counter, '02x')
@@ -315,7 +314,6 @@ def parse_hlc_code(hlc_code):
                 memory[int(else_jump_address)] = format(counter, '02x')
                 else_flag = 0
             if loop_flag == 1:
-                counter = generate_assembly_code("cmp", while_cmp, counter, line)
                 action_jump = while_instruction.split()[0]
                 counter = generate_assembly_code(action_jump, while_instruction, counter, line)
                 memory[int(loop_jump_address)] = format(counter, '02x')
@@ -345,19 +343,7 @@ def parse_hlc_code(hlc_code):
                     instruction = "je FF"
                     counter = generate_assembly_code("je", instruction, counter, line)
                 # change when find the first end
-                while_cmp = "cmp " + line_while[1] + " " + line_while[3]
-                if line_while[2] == relational_operators[0]:
-                    while_instruction = "jl " + str(counter)
-                elif line_while[2] == relational_operators[1]:
-                    while_instruction = "jle " + str(counter)
-                elif line_while[2] == relational_operators[2]:
-                    while_instruction = "jg " + str(counter)
-                elif line_while[2] == relational_operators[3]:
-                    while_instruction = "jge " + str(counter)
-                elif line_while[2] == relational_operators[4]:
-                    while_instruction = "je " + str(counter)
-                elif line_while[2] == relational_operators[5]:
-                    while_instruction = "jne " + str(counter)
+                while_instruction = "jmp " + str(counter)
             else:
                 print("Error: Only one relational operator is allowed in if statements.")
                 sys.exit()
