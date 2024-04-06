@@ -2,6 +2,8 @@ import ctypes
 import sys
 import csv
 import re
+import pandas as pd
+
 
 # High Level Code
 hlc = """
@@ -13,6 +15,9 @@ c = b * a / 10
 x = -5
 y = 13
 if c <= 10
+    print a
+    print b
+    print c
     x = y + 10
     print x
     print y
@@ -46,12 +51,6 @@ variable = {}
 memory = [format(0, '02x') for _ in range(1024)]  # 1kB byte-addressable memory
 # Define mappings for variables, registers, and flags along with their corresponding addresses
 mapping = {
-    # 'a': '01',
-    # 'b': '02',
-    # 'c': '03',
-    # 'x': '04',
-    # 'y': '05',
-    # 'z': '06',
     'eax': '07',
     'ebx': '08',
     'ecx': '09',
@@ -231,7 +230,7 @@ def parse_hlc_code(hlc_code):
                 sys.exit()
             for var_name in var_list:
                 unsigned_array[var_name] = ctypes.c_uint8(0)
-                variable[var_name] = ctypes.c_uint8(0)
+                variable[var_name] = 0
                 mapping[var_name] = "0" + str(counter_variable)
                 counter_variable += 1
         elif line.startswith('signed'):
@@ -242,7 +241,7 @@ def parse_hlc_code(hlc_code):
                 sys.exit()
             for var_name in var_list:
                 signed_array[var_name] = ctypes.c_int8(0)
-                variable[var_name] = ctypes.c_int8(0)
+                variable[var_name] = 0
                 mapping[var_name] = "0" + str(counter_variable)
                 counter_variable += 1
         elif line.startswith('print'):
@@ -269,22 +268,22 @@ def parse_hlc_code(hlc_code):
                 instruction = "cmp " + line_if[1] + " " + line_if[3]
                 counter = generate_assembly_code("cmp", instruction, counter, line)
                 if line_if[2] == relational_operators[0]:
-                    instruction = "jge 0"
+                    instruction = "jge " + str(counter)
                     counter = generate_assembly_code("jge", instruction, counter, line)
                 elif line_if[2] == relational_operators[1]:
-                    instruction = "jg 0"
+                    instruction = "jg " + str(counter)
                     counter = generate_assembly_code("jg", instruction, counter, line)
                 elif line_if[2] == relational_operators[2]:
-                    instruction = "jle 0"
+                    instruction = "jle " + str(counter)
                     counter = generate_assembly_code("jle", instruction, counter, line)
                 elif line_if[2] == relational_operators[3]:
-                    instruction = "jl 0"
+                    instruction = "jl " + str(counter)
                     counter = generate_assembly_code("jl", instruction, counter, line)
                 elif line_if[2] == relational_operators[4]:
-                    instruction = "jne 0"
+                    instruction = "jne " + str(counter)
                     counter = generate_assembly_code("jne", instruction, counter, line)
                 elif line_if[2] == relational_operators[5]:
-                    instruction = "je 0"
+                    instruction = "je " + str(counter)
                     counter = generate_assembly_code("je", instruction, counter, line)
             else:
                 print("Error: Only one relational operator is allowed in if statements.")
@@ -302,7 +301,7 @@ def parse_hlc_code(hlc_code):
             if len(line_else) == 1:
                 memory[int(if_jump_address)] = format((counter + 2), '02x')
                 else_jump_address = counter + 1
-                instruction = "jmp 0"
+                instruction = "jmp " + str(counter)
                 counter = generate_assembly_code("jmp", instruction, counter, line)
             else:
                 print("Error: Else statement is incorrect!")
@@ -327,22 +326,22 @@ def parse_hlc_code(hlc_code):
                 instruction = "cmp " + line_while[1] + " " + line_while[3]
                 counter = generate_assembly_code("cmp", instruction, counter, line)
                 if line_while[2] == relational_operators[0]:
-                    instruction = "jge 0"
+                    instruction = "jge " + str(counter)
                     counter = generate_assembly_code("jge", instruction, counter, line)
                 elif line_while[2] == relational_operators[1]:
-                    instruction = "jg 0"
+                    instruction = "jg " + str(counter)
                     counter = generate_assembly_code("jg", instruction, counter, line)
                 elif line_while[2] == relational_operators[2]:
-                    instruction = "jle 0"
+                    instruction = "jle " + str(counter)
                     counter = generate_assembly_code("jle", instruction, counter, line)
                 elif line_while[2] == relational_operators[3]:
-                    instruction = "jl 0"
+                    instruction = "jl " + str(counter)
                     counter = generate_assembly_code("jl", instruction, counter, line)
                 elif line_while[2] == relational_operators[4]:
-                    instruction = "jne 0"
+                    instruction = "jne " + str(counter)
                     counter = generate_assembly_code("jne", instruction, counter, line)
                 elif line_while[2] == relational_operators[5]:
-                    instruction = "je 0"
+                    instruction = "je " + str(counter)
                     counter = generate_assembly_code("je", instruction, counter, line)
                 # change when find the first end
                 while_instruction = "jmp " + str(while_start_address)
@@ -694,7 +693,7 @@ def save_csv_file(register_v, flag_v, hlc_code, memory_address, ymc_code, ymc_en
 
 def generate_assembly_code(action, instruction, counter_c, hlc_code_line):
     counter_c = int(counter_c)
-    if  action == 'vrmov' or action == 'vmmov':
+    if action == 'vrmov' or action == 'vmmov':
         counter_c = ymc_to_machine_value_left(instruction, counter_c, hlc_code_line)
     elif action == 'rmmov' or action == 'mrmov' or action == 'rrmov' or action == 'mmmov':
         counter_c = ymc_to_machine(instruction, counter_c, hlc_code_line)
@@ -872,9 +871,8 @@ def process_memory_instruction(memory_instruction):
         action = value_get_key(machine_code, ymc_to_machine_code)
         action_space = action_spaces.get(str(action), 'Unknown')
         if action_space == 'Unknown':
-            print("Error: " + str(action) + " is not defined!")
-        else:
-            return action_space
+            print("End. The outer is above.")
+            return
         action_space = int(action_space)
         action_start = pointer
         machine_code = str(machine_code)
@@ -893,11 +891,11 @@ def process_memory_instruction(memory_instruction):
 
 def process_function(action, instruction, counter_c):
     if action == 'vrmov':
-        value = format(instruction[0], '02x')
+        value = format(int(instruction[0], 16), '02x')
         register = value_get_key(instruction[1], mapping)
         registers[register] = value
     elif action == 'vmmov':
-        value = format(instruction[0], '02x')
+        value = format(int(instruction[0], 16), '02x')
         variable_key = value_get_key(instruction[1], mapping)
         variable[variable_key] = value
     elif action == 'rmmov':
@@ -922,8 +920,8 @@ def process_function(action, instruction, counter_c):
         variable[variable_key] = value
     elif action == 'cmp':
         variable_key = value_get_key(instruction[0], mapping)
-        value = int(variable[variable_key])
-        cmp_value = int(instruction[1])
+        value = int(str(variable[variable_key]), 16)
+        cmp_value = int(instruction[1], 16)
         new_value = value - cmp_value
         if new_value == 0:
             flags['ZF'] = 1
@@ -940,7 +938,7 @@ def process_function(action, instruction, counter_c):
     elif action == 'iaddmul':
         registers['eax'] = operations('+', '*', instruction, 0)
     elif action == 'iadddiv':
-        registers['eax'] = operations('+', '/', instruction, 0)
+        registers['eax'] = operations('+', '//', instruction, 0)
     elif action == 'isubadd':
         registers['eax'] = operations('-', '+', instruction, 0)
     elif action == 'isubsub':
@@ -956,15 +954,15 @@ def process_function(action, instruction, counter_c):
     elif action == 'imulmul':
         registers['eax'] = operations('*', '*', instruction, 0)
     elif action == 'imuldiv':
-        registers['eax'] = operations('*', '/', instruction, 0)
+        registers['eax'] = operations('*', '//', instruction, 0)
     elif action == 'idivadd':
-        registers['eax'] = operations('/', '+', instruction, 0)
+        registers['eax'] = operations('//', '+', instruction, 0)
     elif action == 'idivsub':
-        registers['eax'] = operations('/', '-', instruction, 0)
+        registers['eax'] = operations('//', '-', instruction, 0)
     elif action == 'idivmul':
-        registers['eax'] = operations('/', '*', instruction, 0)
+        registers['eax'] = operations('//', '*', instruction, 0)
     elif action == 'idivdiv':
-        registers['eax'] = operations('/', '/', instruction, 0)
+        registers['eax'] = operations('//', '//', instruction, 0)
     elif action == 'addadd':
         registers['eax'] = operations('+', '+', instruction, 1)
     elif action == 'addsub':
@@ -972,7 +970,7 @@ def process_function(action, instruction, counter_c):
     elif action == 'addmul':
         registers['eax'] = operations('+', '*', instruction, 1)
     elif action == 'adddiv':
-        registers['eax'] = operations('+', '/', instruction, 1)
+        registers['eax'] = operations('+', '//', instruction, 1)
     elif action == 'subadd':
         registers['eax'] = operations('-', '+', instruction, 1)
     elif action == 'subsub':
@@ -980,7 +978,7 @@ def process_function(action, instruction, counter_c):
     elif action == 'submul':
         registers['eax'] = operations('-', '*', instruction, 1)
     elif action == 'subdiv':
-        registers['eax'] = operations('-', '/', instruction, 1)
+        registers['eax'] = operations('-', '//', instruction, 1)
     elif action == 'muladd':
         registers['eax'] = operations('*', '+', instruction, 1)
     elif action == 'mulsub':
@@ -988,15 +986,15 @@ def process_function(action, instruction, counter_c):
     elif action == 'mulmul':
         registers['eax'] = operations('*', '*', instruction, 1)
     elif action == 'muldiv':
-        registers['eax'] = operations('*', '/', instruction, 1)
+        registers['eax'] = operations('*', '//', instruction, 1)
     elif action == 'divadd':
-        registers['eax'] = operations('/', '+', instruction, 1)
+        registers['eax'] = operations('//', '+', instruction, 1)
     elif action == 'divsub':
-        registers['eax'] = operations('/', '-', instruction, 1)
+        registers['eax'] = operations('//', '-', instruction, 1)
     elif action == 'divmul':
-        registers['eax'] = operations('/', '*', instruction, 1)
+        registers['eax'] = operations('//', '*', instruction, 1)
     elif action == 'divdiv':
-        registers['eax'] = operations('/', '/', instruction, 1)
+        registers['eax'] = operations('//', '//', instruction, 1)
     elif action == 'add':
         registers['eax'] = operations('+', None, instruction, 1)
     elif action == 'sub':
@@ -1004,7 +1002,7 @@ def process_function(action, instruction, counter_c):
     elif action == 'mul':
         registers['eax'] = operations('×', None, instruction, 1)
     elif action == 'div':
-        registers['eax'] = operations('/', None, instruction, 1)
+        registers['eax'] = operations('//', None, instruction, 1)
     elif action == 'iadd':
         registers['eax'] = operations('+', None, instruction, 0)
     elif action == 'isub':
@@ -1012,7 +1010,7 @@ def process_function(action, instruction, counter_c):
     elif action == 'imul':
         registers['eax'] = operations('×', None, instruction, 0)
     elif action == 'idiv':
-        registers['eax'] = operations('/', None, instruction, 0)
+        registers['eax'] = operations('//', None, instruction, 0)
     elif action == 'jmp':
         counter_c = int(instruction[0], 16)
     elif action == 'jle':
@@ -1036,9 +1034,13 @@ def process_function(action, instruction, counter_c):
     elif action == 'call':
         variable_key = value_get_key(instruction[0], mapping)
         if variable_key is not None:
-            print(variable[variable_key])
+            if variable_key != '\\n':
+                print(int(str(variable[variable_key]), 16), end="")
+                print(" ", end="")
+            else:
+                print('\n' + " ", end="")
         else:
-            print('\n')
+            print('\n' + " ", end="")
     else:
         print("Error: Second part unknown action." + action)
         sys.exit()
@@ -1052,20 +1054,20 @@ def operations(operator_1, operator_2, instruction, variable_type):
     flags['CF'] = 0
     # variable_type: 0 signed, 1 unsigned
     if operator_2 is not None:
-        value_1 = int(registers['eax'], 16)
+        value_1 = int(str(registers['eax']), 16)
         register_2 = value_get_key(instruction[0], mapping)
-        value_2 = int(registers[register_2], 16)
+        value_2 = int(str(registers[register_2]), 16)
         register_3 = value_get_key(instruction[1], mapping)
-        value_3 = int(registers[register_3], 16)
+        value_3 = int(str(registers[register_3]), 16)
         if variable_type == 1:
             value_1 = value_1 & 0xFF
             value_2 = value_2 & 0xFF
             value_3 = value_3 & 0xFF
         result = eval(f"{value_1} {operator_1} {value_2} {operator_2} {value_3}")
     else:
-        value_1 = int(registers['eax'], 16)
+        value_1 = int(str(registers['eax']), 16)
         register_2 = value_get_key(instruction[0], mapping)
-        value_2 = int(registers[register_2], 16)
+        value_2 = int(str(registers[register_2]), 16)
         if variable_type == 1:
             value_1 = value_1 & 0xFF
             value_2 = value_2 & 0xFF
@@ -1078,6 +1080,9 @@ def operations(operator_1, operator_2, instruction, variable_type):
         flags['OF'] = result > max_value or result < min_value
     flags['ZF'] = result == 0
     flags['CF'] = result > 255
+    if result < 0:
+        result = (1 << 8) + result
+    result = format(result, '02x')
     return result
 
 
@@ -1085,11 +1090,11 @@ parse_hlc_code(hlc)
 process_memory_instruction(memory)
 # Write into CSV path
 csv_file_path = 'C:/Users/DELL/Desktop/CSC565/Project/HLC-program.csv'
-with open(csv_file_path, 'w', newline='') as csvfile:
-    csv_writer = csv.writer(csvfile)
-    for row in HLC_program:
-        csv_writer.writerow(row)
+with open(csv_file_path, 'w', newline='') as file:
+    writer = csv.writer(file)
+    writer.writerow(save_csv_file)
 print("HLC CSV file have been created")
+
 
 # Write into CSV path
 memory_csv_file_path = 'C:/Users/DELL/Desktop/CSC565/Project/memory.csv'
