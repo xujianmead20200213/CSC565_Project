@@ -62,7 +62,8 @@ mapping = {
     'OF': '0C',
     'SF': '0D',
     'ZF': '0E',
-    '__$EncStackInitStart': 'A0'
+    '__$EncStackInitStart': 'A0',
+    '\n': '0F'
 }
 # Define the mapping between YMC instructions and machine code
 ymc_to_machine_code = {
@@ -694,97 +695,175 @@ def save_csv_file(register_v, flag_v, hlc_code, memory_address, ymc_code, ymc_en
 
 def generate_assembly_code(action, instruction, counter_c, hlc_code_line):
     counter_c = int(counter_c)
-    if action == 'vrmov':
-        # split the instruction
-        instruction = instruction.strip()
-        var_list = instruction.split()
-        # put the first instruction into memory according to table is the action like vrmov
-        memory[counter_c] = ymc_to_machine_code.get(var_list[0])
-        counter_c += 1
-        convert_hlc_ymc.append(instruction)
-        hlc_mapping_ymc.append(hlc_code_line)
-        # put the second instruction into memory like value
-        if variable.get(var_list[1]) is None:
-            num = int(var_list[1])
-            if num < 0:
-                num = (1 << 8) + num
-            hex_str = format(num, '02x')
-            memory[counter_c] = hex_str
-        else:
-            memory[counter_c] = mapping.get(var_list[1])
-        counter_c += 1
-        convert_hlc_ymc.append(instruction)
-        hlc_mapping_ymc.append(hlc_code_line)
-        # put the third instruction into memory like register
-        memory[counter_c] = mapping.get(var_list[2])
-        counter_c += 1
-        convert_hlc_ymc.append(instruction)
-        hlc_mapping_ymc.append(hlc_code_line)
-    # elif action == 'vmmov':
-    #
-    # elif action == 'rmmov':
-    #
-    # elif action == 'mrmov':
-    #
-    # elif action == 'rrmov':
-    #
-    # elif action == 'mmmov':
-    #
-    # elif action == 'cmp':
-    # 'iaddadd':
-    # 'iaddsub':
-    # elif action == 'iaddmul':
-    #
-    # elif action == 'iadddiv':
-    # 'isubadd':
-    # 'isubsub':
-    # 'isubmul': '46',
-    # 'isubdiv': '47',
-    # 'imuladd': '48',
-    # 'imulsub': '49',
-    # 'imulmul': '4A',
-    # 'imuldiv': '4B',
-    # 'idivadd': '4C',
-    # 'idivsub': '4D',
-    # 'idivmul': '4E',
-    # 'idivdiv': '4F',
-    # 'addadd': '50',
-    # 'addsub': '51',
-    # 'addmul': '52',
-    # 'adddiv': '53',
-    # 'subadd': '54',
-    # 'subsub': '55',
-    # 'submul': '56',
-    # 'subdiv': '57',
-    # 'muladd': '58',
-    # 'mulsub': '59',
-    # 'mulmul': '5A',
-    # 'muldiv': '5B',
-    # 'divadd': '5C',
-    # 'divsub': '5D',
-    # 'divmul': '5E',
-    # 'divdiv': '5F',
-    # 'add': '60',
-    # 'sub': '61',
-    # 'mul': '62',
-    # 'div': '63',
-    # 'iadd': '60',
-    # 'isub': '61',
-    # 'imul': '64',
-    # 'idiv': '65',
-    # 'jmp': '70',
-    # 'jle': '71',
-    # 'jl': '72',
-    # 'je': '73',
-    # 'jne': '74',
-    # 'jge': '75',
-    # 'jg': '76',
-    # 'call': '90'
-
+    if  action == 'vrmov' or action == 'vmmov':
+        counter_c = ymc_to_machine_value_left(instruction, counter_c, hlc_code_line)
+    elif action == 'rmmov' or action == 'mrmov' or action == 'rrmov' or action == 'mmmov':
+        counter_c = ymc_to_machine(instruction, counter_c, hlc_code_line)
+    elif action == 'cmp':
+        counter_c = ymc_to_machine_value_right(instruction, counter_c, hlc_code_line)
+    elif action == 'iaddadd':
+        counter_c = ymc_to_machine(instruction, counter_c, hlc_code_line)
+    elif action == 'iaddsub':
+        counter_c = ymc_to_machine(instruction, counter_c, hlc_code_line)
+    elif action == 'iaddmul':
+        counter_c = ymc_to_machine(instruction, counter_c, hlc_code_line)
+    elif action == 'iadddiv':
+        counter_c = ymc_to_machine(instruction, counter_c, hlc_code_line)
+    elif action == 'isubadd':
+        counter_c = ymc_to_machine(instruction, counter_c, hlc_code_line)
+    elif action == 'isubsub':
+        counter_c = ymc_to_machine(instruction, counter_c, hlc_code_line)
+    elif action == 'isubmul':
+        counter_c = ymc_to_machine(instruction, counter_c, hlc_code_line)
+    elif action == 'isubdiv':
+        counter_c = ymc_to_machine(instruction, counter_c, hlc_code_line)
+    elif action == 'imuladd':
+        counter_c = ymc_to_machine(instruction, counter_c, hlc_code_line)
+    elif action == 'imulsub':
+        counter_c = ymc_to_machine(instruction, counter_c, hlc_code_line)
+    elif action == 'imulmul':
+        counter_c = ymc_to_machine(instruction, counter_c, hlc_code_line)
+    elif action == 'imuldiv':
+        counter_c = ymc_to_machine(instruction, counter_c, hlc_code_line)
+    elif action == 'idivadd':
+        counter_c = ymc_to_machine(instruction, counter_c, hlc_code_line)
+    elif action == 'idivsub':
+        counter_c = ymc_to_machine(instruction, counter_c, hlc_code_line)
+    elif action == 'idivmul':
+        counter_c = ymc_to_machine(instruction, counter_c, hlc_code_line)
+    elif action == 'idivdiv':
+        counter_c = ymc_to_machine(instruction, counter_c, hlc_code_line)
+    elif action == 'addadd':
+        counter_c = ymc_to_machine(instruction, counter_c, hlc_code_line)
+    elif action == 'addsub':
+        counter_c = ymc_to_machine(instruction, counter_c, hlc_code_line)
+    elif action == 'addmul':
+        counter_c = ymc_to_machine(instruction, counter_c, hlc_code_line)
+    elif action == 'adddiv':
+        counter_c = ymc_to_machine(instruction, counter_c, hlc_code_line)
+    elif action == 'subadd':
+        counter_c = ymc_to_machine(instruction, counter_c, hlc_code_line)
+    elif action == 'subsub':
+        counter_c = ymc_to_machine(instruction, counter_c, hlc_code_line)
+    elif action == 'submul':
+        counter_c = ymc_to_machine(instruction, counter_c, hlc_code_line)
+    elif action == 'subdiv':
+        counter_c = ymc_to_machine(instruction, counter_c, hlc_code_line)
+    elif action == 'muladd':
+        counter_c = ymc_to_machine(instruction, counter_c, hlc_code_line)
+    elif action == 'mulsub':
+        counter_c = ymc_to_machine(instruction, counter_c, hlc_code_line)
+    elif action == 'mulmul':
+        counter_c = ymc_to_machine(instruction, counter_c, hlc_code_line)
+    elif action == 'muldiv':
+        counter_c = ymc_to_machine(instruction, counter_c, hlc_code_line)
+    elif action == 'divadd':
+        counter_c = ymc_to_machine(instruction, counter_c, hlc_code_line)
+    elif action == 'divsub':
+        counter_c = ymc_to_machine(instruction, counter_c, hlc_code_line)
+    elif action == 'divmul':
+        counter_c = ymc_to_machine(instruction, counter_c, hlc_code_line)
+    elif action == 'divdiv':
+        counter_c = ymc_to_machine(instruction, counter_c, hlc_code_line)
+    elif action == 'add':
+        counter_c = ymc_to_machine_short(instruction, counter_c, hlc_code_line)
+    elif action == 'sub':
+        counter_c = ymc_to_machine_short(instruction, counter_c, hlc_code_line)
+    elif action == 'mul':
+        counter_c = ymc_to_machine_short(instruction, counter_c, hlc_code_line)
+    elif action == 'div':
+        counter_c = ymc_to_machine_short(instruction, counter_c, hlc_code_line)
+    elif action == 'iadd':
+        counter_c = ymc_to_machine_short(instruction, counter_c, hlc_code_line)
+    elif action == 'isub':
+        counter_c = ymc_to_machine_short(instruction, counter_c, hlc_code_line)
+    elif action == 'imul':
+        counter_c = ymc_to_machine_short(instruction, counter_c, hlc_code_line)
+    elif action == 'idiv':
+        counter_c = ymc_to_machine_short(instruction, counter_c, hlc_code_line)
+    elif action == 'jmp':
+        counter_c = ymc_to_machine_short_value(instruction, counter_c, hlc_code_line)
+    elif action == 'jle':
+        counter_c = ymc_to_machine_short_value(instruction, counter_c, hlc_code_line)
+    elif action == 'jl':
+        counter_c = ymc_to_machine_short_value(instruction, counter_c, hlc_code_line)
+    elif action == 'je':
+        counter_c = ymc_to_machine_short_value(instruction, counter_c, hlc_code_line)
+    elif action == 'jne':
+        counter_c = ymc_to_machine_short_value(instruction, counter_c, hlc_code_line)
+    elif action == 'jge':
+        counter_c = ymc_to_machine_short_value(instruction, counter_c, hlc_code_line)
+    elif action == 'jg':
+        counter_c = ymc_to_machine_short_value(instruction, counter_c, hlc_code_line)
+    elif action == 'call':
+        counter_c = ymc_to_machine_short(instruction, counter_c, hlc_code_line)
     else:
         print("Error: Unknown action.")
         sys.exit()
     return counter_c
+
+
+def ymc_to_machine(instruction_y2m, counter_y2m, hlc_code_line_y2m):
+    instruction_y2m = instruction_y2m.strip()
+    var_list = instruction_y2m.split()
+    counter_y2m = insert_memory(ymc_to_machine_code.get(var_list[0]), counter_y2m, instruction_y2m, hlc_code_line_y2m)
+    counter_y2m = insert_memory(mapping.get(var_list[1]), counter_y2m, instruction_y2m, hlc_code_line_y2m)
+    counter_y2m = insert_memory(mapping.get(var_list[2]), counter_y2m, instruction_y2m, hlc_code_line_y2m)
+    return counter_y2m
+
+
+def ymc_to_machine_value_left(instruction_y2m, counter_y2m, hlc_code_line_y2m):
+    instruction_y2m = instruction_y2m.strip()
+    var_list = instruction_y2m.split()
+    counter_y2m = insert_memory(ymc_to_machine_code.get(var_list[0]), counter_y2m, instruction_y2m, hlc_code_line_y2m)
+    num = int(var_list[1])
+    if num < 0:
+        num = (1 << 8) + num
+    hex_str = format(num, '02x')
+    counter_y2m = insert_memory(hex_str, counter_y2m, instruction_y2m, hlc_code_line_y2m)
+    counter_y2m = insert_memory(mapping.get(var_list[2]), counter_y2m, instruction_y2m, hlc_code_line_y2m)
+    return counter_y2m
+
+
+def ymc_to_machine_value_right(instruction_y2m, counter_y2m, hlc_code_line_y2m):
+    instruction_y2m = instruction_y2m.strip()
+    var_list = instruction_y2m.split()
+    counter_y2m = insert_memory(ymc_to_machine_code.get(var_list[0]), counter_y2m, instruction_y2m, hlc_code_line_y2m)
+    num = int(var_list[2])
+    if num < 0:
+        num = (1 << 8) + num
+    hex_str = format(num, '02x')
+    counter_y2m = insert_memory(mapping.get(var_list[1]), counter_y2m, instruction_y2m, hlc_code_line_y2m)
+    counter_y2m = insert_memory(hex_str, counter_y2m, instruction_y2m, hlc_code_line_y2m)
+    return counter_y2m
+
+
+def ymc_to_machine_short(instruction_y2m, counter_y2m, hlc_code_line_y2m):
+    instruction_y2m = instruction_y2m.strip()
+    var_list = instruction_y2m.split()
+    counter_y2m = insert_memory(ymc_to_machine_code.get(var_list[0]), counter_y2m, instruction_y2m, hlc_code_line_y2m)
+    counter_y2m = insert_memory(mapping.get(var_list[1]), counter_y2m, instruction_y2m, hlc_code_line_y2m)
+    return counter_y2m
+
+
+def ymc_to_machine_short_value(instruction_y2m, counter_y2m, hlc_code_line_y2m):
+    instruction_y2m = instruction_y2m.strip()
+    var_list = instruction_y2m.split()
+    counter_y2m = insert_memory(ymc_to_machine_code.get(var_list[0]), counter_y2m, instruction_y2m, hlc_code_line_y2m)
+    num = int(var_list[1])
+    if num < 0:
+        num = (1 << 8) + num
+    hex_str = format(num, '02x')
+    counter_y2m = insert_memory(hex_str, counter_y2m, instruction_y2m, hlc_code_line_y2m)
+    return counter_y2m
+
+
+def insert_memory(machine_code, counter_memory, instruction_memory, hlc_code_line_memory):
+    memory[counter_memory] = machine_code
+    counter_memory += 1
+    convert_hlc_ymc.append(instruction_memory)
+    hlc_mapping_ymc.append(hlc_code_line_memory)
+    return counter_memory
 
 
 def process_memory_instruction(memory_instruction):
