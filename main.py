@@ -217,6 +217,7 @@ def parse_hlc_code(hlc_code):
     else_flag = 0
     while_cmp = ""
     while_instruction = ""
+    while_start_address = 0
     counter_variable = 1
     for line in hlc_code.split('\n'):
         line = line.strip()
@@ -320,6 +321,7 @@ def parse_hlc_code(hlc_code):
                 loop_flag = 0
             line_while = line.split()
             if len(line_while) == 4 and line_while[2] in relational_operators:
+                while_start_address = counter
                 loop_jump_address = counter + 4
                 loop_flag = 1
                 instruction = "cmp " + line_while[1] + " " + line_while[3]
@@ -343,7 +345,7 @@ def parse_hlc_code(hlc_code):
                     instruction = "je FF"
                     counter = generate_assembly_code("je", instruction, counter, line)
                 # change when find the first end
-                while_instruction = "jmp " + str(counter)
+                while_instruction = "jmp " + str(while_start_address)
             else:
                 print("Error: Only one relational operator is allowed in if statements.")
                 sys.exit()
