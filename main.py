@@ -1151,3 +1151,6 @@ with open(memory_csv_file_path, 'w', newline='') as file:
     for i in range(0, len(memory), 16):
         writer.writerow(memory[i:i + 16])
 print("Memory CSV file have been created")
+
+print(memory)
+print(HLC_program)
