@@ -180,8 +180,10 @@ action_spaces = {
 convert_hlc_ymc = []
 hlc_mapping_ymc = []
 HLC_program = []
-csv_title = ["HLC instruction", "YMC Address", "YMC assembly", "YMC encoding",
-             "Modified registers (if any, after execution)", "Modified flags (if any, after execution)"]
+# csv_title = ["HLC instruction", "YMC Address", "YMC assembly", "YMC encoding",
+#              "Modified registers (if any, after execution)", "Modified flags (if any, after execution)"]
+csv_title = ["HLC instruction", "YMC encoding",
+             "Modified registers (if any, after execution)", "Modified flags (if any, after execution)", "YMC assembly", "YMC Address"]
 HLC_program.append(csv_title)
 
 
@@ -391,34 +393,6 @@ def parse_hlc_code(hlc_code):
                                   f" '{var}' and '{right_side[0]}' or '{right_side[2]}'")
                             sys.exit()
                         else:
-                            if right_type_1 is not None:
-                                instruction = "mrmov " + right_side[0] + " eax"
-                                counter = generate_assembly_code("mrmov", instruction, counter, line)
-                            else:
-                                instruction = "vrmov " + right_side[0] + " eax"
-                                counter = generate_assembly_code("vrmov", instruction, counter, line)
-                            if right_type_2 is not None:
-                                instruction = "mrmov " + right_side[2] + " ebx"
-                                counter = generate_assembly_code("mrmov", instruction, counter, line)
-                            else:
-                                instruction = "vrmov " + right_side[2] + " ebx"
-                                counter = generate_assembly_code("vrmov", instruction, counter, line)
-                            if var in unsigned_array:
-                                if right_side[1] == operators[0]:
-                                    instruction = "add ebx"
-                                    counter = generate_assembly_code("add", instruction, counter, line)
-                                elif right_side[1] == operators[1]:
-                                    instruction = "sub ebx"
-                                    counter = generate_assembly_code("sub", instruction, counter, line)
-                                elif right_side[1] == operators[2]:
-                                    instruction = "mul ebx"
-                                    counter = generate_assembly_code("mul", instruction, counter, line)
-                                elif right_side[1] == operators[3]:
-                                    if right_side[2] == 0:
-                                        print(f"Error: The formular can divided by Zero!")
-                                        sys.exit()
-                                    instruction = "div ebx"
-                                    counter = generate_assembly_code("div", instruction, counter, line)
                             if right_type_1 is not None:
                                 instruction = "mrmov " + right_side[0] + " eax"
                                 counter = generate_assembly_code("mrmov", instruction, counter, line)
@@ -885,8 +859,10 @@ def process_memory_instruction(memory_instruction):
             instruction.append(new_machine_code)
         pointer += 1
         pointer = process_function(action, instruction, pointer)
+        registers_string = "eax=" + registers['eax'] +", ebx=" + registers['ebx'] +", ecx=" + registers['ecx'] +", edx="+ registers['edx']
+        flags_string = "ZF=" + str(flags['ZF']) +", SF=" + str(flags['SF']) +", OF=" + str(flags['OF']) +", CF="+ str(flags['CF'])
         save_csv_file(hlc_mapping_ymc[action_start], action_start,
-                      convert_hlc_ymc[action_start], machine_code, registers, flags)
+                      convert_hlc_ymc[action_start], machine_code, registers_string, flags_string)
 
 
 def process_function(action, instruction, counter_c):
@@ -1090,9 +1066,10 @@ parse_hlc_code(hlc)
 process_memory_instruction(memory)
 # Write into CSV path
 csv_file_path = 'C:/Users/DELL/Desktop/CSC565/Project/HLC-program.csv'
-with open(csv_file_path, 'w', newline='') as file:
-    writer = csv.writer(file)
-    writer.writerow(save_csv_file)
+with open(csv_file_path, 'w', newline='') as csvfile:
+    csv_writer = csv.writer(csvfile)
+    for row in HLC_program:
+        csv_writer.writerow(row)
 print("HLC CSV file have been created")
 
 
