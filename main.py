@@ -195,8 +195,8 @@ action_spaces = {
 convert_hlc_ymc = []
 hlc_mapping_ymc = []
 HLC_program = []
-csv_title = ["HLC instruction", "YMC encoding",
-             "Modified registers (if any, after execution)", "Modified flags (if any, after execution)", "YMC assembly", "YMC Address"]
+csv_title = ["HLC instruction", "YMC encoding", "Modified registers (if any, after execution)",
+             "Modified flags (if any, after execution)", "YMC assembly", "YMC Address"]
 HLC_program.append(csv_title)
 
 
@@ -231,7 +231,9 @@ def parse_hlc_code(hlc_code):
     while_instruction = ""
     counter_variable = 1
     lines = re.split(r'(?<!\\)\n', hlc_code)
+    last_line = ""
     for line in lines:
+        last_line = line
         line = line.strip()
         if not line:
             continue
@@ -666,7 +668,7 @@ def parse_hlc_code(hlc_code):
             convert_hlc_ymc[int(else_jump_address)-1] = 'jmp ' + str(counter)
         if loop_flag == 1:
             action_jump = while_instruction.split()[0]
-            counter = generate_assembly_code(action_jump, while_instruction, counter, line)
+            counter = generate_assembly_code(action_jump, while_instruction, counter, last_line)
             memory[int(loop_jump_address)] = format(counter, '02x')
             convert_hlc_ymc[int(loop_jump_address)] = action_jump + ' ' + str(counter)
             convert_hlc_ymc[int(loop_jump_address) - 1] = action_jump + ' ' + str(counter)
@@ -1069,6 +1071,7 @@ def operations(operator_1, operator_2, instruction, variable_type):
     flags['OF'] = 0
     flags['ZF'] = 0
     flags['CF'] = 0
+    result = 0
     # variable_type: 0 signed, 1 unsigned
     register_2 = value_get_key(instruction[0], mapping)
     value_1 = int(str(registers['eax']), 16)
