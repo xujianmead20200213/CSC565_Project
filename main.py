@@ -6,32 +6,48 @@ import pandas as pd
 
 
 # High Level Code
-hlc = """
-unsigned a b c
-signed x y z
-a = 3
-b = 15 + a
-c = b * a / 10
-x = -5
-y = 13
-if c == 10
-    x = y + 10
-    print x
-    print y
-else
-    print a
-    print b
-    print c
-    x = y - 20
-    print x
-    print y
+# hlc = """
+# unsigned a b c
+# signed x y z
+# a = 3
+# b = 15 + a
+# c = b * a / 10
+# x = -5
+# y = 13
+# if c == 10
+#     x = y + 10
+#     print x
+#     print y
+# else
+#     x = y - 20
+#     print x
+#     print y
+#
+# while y > 0
+#     print y
+#     print \\n
+#     print x
+#     print \\n
+#     y = y - 1
+# """
 
-while y > 0
-    print y
-    print \\n
-    print x
-    print \\n
-    y = y - 1 
+
+# High Level Code
+hlc = """
+unsigned a b
+signed x y
+a = 10
+b = 2
+x = -10
+y = 1
+while x < 0
+       print x
+       print \\n
+       x = x + y
+while a > 0
+       print a
+       print \\n
+       a = a - b
 """
 
 # Define an array with unsigned elements
@@ -877,8 +893,10 @@ def process_memory_instruction(memory_instruction):
             instruction.append(new_machine_code)
         pointer += 1
         pointer = process_function(action, instruction, pointer)
-        registers_string = "eax=" + str(registers['eax']) + ", ebx=" + str(registers['ebx']) + ", ecx=" + str(registers['ecx']) + ", edx=" + str(registers['edx'])
-        flags_string = "ZF=" + str(flags['ZF']) + ", SF=" + str(flags['SF']) + ", OF=" + str(flags['OF']) + ", CF=" + str(flags['CF'])
+        registers_string = ("eax=" + str(registers['eax']) + ", ebx=" + str(registers['ebx']) +
+                            ", ecx=" + str(registers['ecx']) + ", edx=" + str(registers['edx']))
+        flags_string = ("ZF=" + str(flags['ZF']) + ", SF=" + str(flags['SF']) +
+                        ", OF=" + str(flags['OF']) + ", CF=" + str(flags['CF']))
         save_csv_file(hlc_mapping_ymc[action_start], action_start,
                       convert_hlc_ymc[action_start], machine_code, registers_string, flags_string)
 
@@ -894,8 +912,19 @@ def process_function(action, instruction, counter_c):
         variable[variable_key] = value
     elif action == 'rmmov':
         register = value_get_key(instruction[0], mapping)
-        value = registers[register]
+        value = int(str(registers[register]), 16)
         variable_key = value_get_key(instruction[1], mapping)
+        if variable_key in unsigned_array:
+            variable_type_mov = 1
+        else:
+            variable_type_mov = 0
+        if variable_type_mov == 1:
+            value &= 0xFF
+            if value < 0:
+                value = (1 << 8) + value
+        else:
+            value = (value + 0x80) % 0x100 - 0x80
+        value = format(value, '02x')
         variable[variable_key] = value
     elif action == 'mrmov':
         variable_key = value_get_key(instruction[0], mapping)
