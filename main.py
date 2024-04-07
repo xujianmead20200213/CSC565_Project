@@ -1049,13 +1049,13 @@ def operations(operator_1, operator_2, instruction, variable_type):
             value_2 = value_2 & 0xFF
         result = eval(f"{value_1} {operator_1} {value_2}")
     # Flags
-    flags['SF'] = result < 0
+    flags['SF'] = int(result < 0)
     if variable_type == 0:
         max_value = 2 ** (8 * result.bit_length() - 1) - 1
         min_value = -max_value - 1
-        flags['OF'] = result > max_value or result < min_value
-    flags['ZF'] = result == 0
-    flags['CF'] = result > 255
+        flags['OF'] = int(result > max_value or result < min_value)
+    flags['ZF'] = int(result == 0)
+    flags['CF'] = int(result > 255)
     if result < 0:
         result = (1 << 8) + result
     result = format(result, '02x')
