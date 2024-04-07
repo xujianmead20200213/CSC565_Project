@@ -1113,7 +1113,6 @@ def operations(operator_1, operator_2, instruction, variable_type):
         else:
             value_1 = (value_1 + 0x80) % 0x100 - 0x80
             value_2 = (value_2 + 0x80) % 0x100 - 0x80
-
         if operator_1 == '+':
             result = value_1 + value_2
         elif operator_1 == '-':
