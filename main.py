@@ -1077,5 +1077,6 @@ print("HLC CSV file have been created")
 memory_csv_file_path = 'C:/Users/DELL/Desktop/CSC565/Project/memory.csv'
 with open(memory_csv_file_path, 'w', newline='') as file:
     writer = csv.writer(file)
-    writer.writerow(memory)
+    for i in range(0, len(memory), 16):
+        writer.writerow(memory[i:i + 16])
 print("Memory CSV file have been created")
