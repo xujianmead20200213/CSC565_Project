@@ -2,7 +2,6 @@ import ctypes
 import sys
 import csv
 import re
-import pandas as pd
 
 
 # High Level Code
@@ -196,8 +195,6 @@ action_spaces = {
 convert_hlc_ymc = []
 hlc_mapping_ymc = []
 HLC_program = []
-# csv_title = ["HLC instruction", "YMC Address", "YMC assembly", "YMC encoding",
-#              "Modified registers (if any, after execution)", "Modified flags (if any, after execution)"]
 csv_title = ["HLC instruction", "YMC encoding",
              "Modified registers (if any, after execution)", "Modified flags (if any, after execution)", "YMC assembly", "YMC Address"]
 HLC_program.append(csv_title)
@@ -231,9 +228,7 @@ def parse_hlc_code(hlc_code):
     else_jump_address = 0
     if_flag = 0
     else_flag = 0
-    while_cmp = ""
     while_instruction = ""
-    while_start_address = 0
     counter_variable = 1
     lines = re.split(r'(?<!\\)\n', hlc_code)
     for line in lines:
@@ -347,7 +342,6 @@ def parse_hlc_code(hlc_code):
                 convert_hlc_ymc[int(loop_jump_address) - 1] = action_jump + ' ' + str(counter)
                 convert_hlc_ymc[int(loop_jump_address) - 2] = action_jump + ' ' + str(counter)
                 convert_hlc_ymc[int(loop_jump_address) - 3] = action_jump + ' ' + str(counter)
-                loop_flag = 0
             line_while = line.split()
             if len(line_while) == 4 and line_while[2] in relational_operators:
                 while_start_address = counter
