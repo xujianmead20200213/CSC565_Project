@@ -14,14 +14,14 @@ b = 15 + a
 c = b * a / 10
 x = -5
 y = 13
-if c <= 10
-    print a
-    print b
-    print c
+if c == 10
     x = y + 10
     print x
     print y
 else
+    print a
+    print b
+    print c
     x = y - 20
     print x
     print y
@@ -257,11 +257,17 @@ def parse_hlc_code(hlc_code):
             if_flag = 1
             if else_flag == 1:
                 memory[int(else_jump_address)] = format(counter, '02x')
+                convert_hlc_ymc[int(else_jump_address)] = 'jmp ' + counter
+                convert_hlc_ymc[int(else_jump_address) - 1] = 'jmp ' + counter
                 else_flag = 0
             if loop_flag == 1:
                 action_jump = while_instruction.split()[0]
                 counter = generate_assembly_code(action_jump, while_instruction, counter, line)
                 memory[int(loop_jump_address)] = format(counter, '02x')
+                convert_hlc_ymc[int(loop_jump_address)] = action_jump + ' ' + counter
+                convert_hlc_ymc[int(loop_jump_address) - 1] = action_jump + ' ' + counter
+                convert_hlc_ymc[int(loop_jump_address) - 2] = action_jump + ' ' + counter
+                convert_hlc_ymc[int(loop_jump_address) - 3] = action_jump + ' ' + counter
                 loop_flag = 0
             line_if = line.split()
             if len(line_if) == 4 and line_if[2] in relational_operators:
@@ -314,11 +320,17 @@ def parse_hlc_code(hlc_code):
                 sys.exit()
             if else_flag == 1:
                 memory[int(else_jump_address)] = format(counter, '02x')
+                convert_hlc_ymc[int(else_jump_address)] = 'jmp ' + str(counter)
+                convert_hlc_ymc[int(else_jump_address) - 1] = 'jmp ' + str(counter)
                 else_flag = 0
             if loop_flag == 1:
                 action_jump = while_instruction.split()[0]
                 counter = generate_assembly_code(action_jump, while_instruction, counter, line)
                 memory[int(loop_jump_address)] = format(counter, '02x')
+                convert_hlc_ymc[int(loop_jump_address)] = action_jump + ' ' + str(counter)
+                convert_hlc_ymc[int(loop_jump_address) - 1] = action_jump + ' ' + str(counter)
+                convert_hlc_ymc[int(loop_jump_address) - 2] = action_jump + ' ' + str(counter)
+                convert_hlc_ymc[int(loop_jump_address) - 3] = action_jump + ' ' + str(counter)
                 loop_flag = 0
             line_while = line.split()
             if len(line_while) == 4 and line_while[2] in relational_operators:
@@ -423,11 +435,11 @@ def parse_hlc_code(hlc_code):
                                     counter = generate_assembly_code("div", instruction, counter, line)
                             else:
                                 if right_side[1] == operators[0]:
-                                    instruction = "add ebx"
-                                    counter = generate_assembly_code("add", instruction, counter, line)
+                                    instruction = "iadd ebx"
+                                    counter = generate_assembly_code("iadd", instruction, counter, line)
                                 elif right_side[1] == operators[1]:
-                                    instruction = "sub ebx"
-                                    counter = generate_assembly_code("sub", instruction, counter, line)
+                                    instruction = "isub ebx"
+                                    counter = generate_assembly_code("isub", instruction, counter, line)
                                 elif right_side[1] == operators[2]:
                                     instruction = "imul ebx"
                                     counter = generate_assembly_code("imul", instruction, counter, line)
@@ -640,10 +652,16 @@ def parse_hlc_code(hlc_code):
             sys.exit()
         if else_flag == 1:
             memory[int(else_jump_address)] = format(counter, '02x')
+            convert_hlc_ymc[int(else_jump_address)] = 'jmp ' + str(counter)
+            convert_hlc_ymc[int(else_jump_address)-1] = 'jmp ' + str(counter)
         if loop_flag == 1:
             action_jump = while_instruction.split()[0]
             counter = generate_assembly_code(action_jump, while_instruction, counter, line)
             memory[int(loop_jump_address)] = format(counter, '02x')
+            convert_hlc_ymc[int(loop_jump_address)] = action_jump + ' ' + str(counter)
+            convert_hlc_ymc[int(loop_jump_address) - 1] = action_jump + ' ' + str(counter)
+            convert_hlc_ymc[int(loop_jump_address) - 2] = action_jump + ' ' + str(counter)
+            convert_hlc_ymc[int(loop_jump_address) - 3] = action_jump + ' ' + str(counter)
 
 
 def check_formula(expr):
@@ -859,8 +877,8 @@ def process_memory_instruction(memory_instruction):
             instruction.append(new_machine_code)
         pointer += 1
         pointer = process_function(action, instruction, pointer)
-        registers_string = "eax=" + registers['eax'] +", ebx=" + registers['ebx'] +", ecx=" + registers['ecx'] +", edx="+ registers['edx']
-        flags_string = "ZF=" + str(flags['ZF']) +", SF=" + str(flags['SF']) +", OF=" + str(flags['OF']) +", CF="+ str(flags['CF'])
+        registers_string = "eax=" + str(registers['eax']) + ", ebx=" + str(registers['ebx']) + ", ecx=" + str(registers['ecx']) + ", edx=" + str(registers['edx'])
+        flags_string = "ZF=" + str(flags['ZF']) + ", SF=" + str(flags['SF']) + ", OF=" + str(flags['OF']) + ", CF=" + str(flags['CF'])
         save_csv_file(hlc_mapping_ymc[action_start], action_start,
                       convert_hlc_ymc[action_start], machine_code, registers_string, flags_string)
 
@@ -1029,25 +1047,52 @@ def operations(operator_1, operator_2, instruction, variable_type):
     flags['ZF'] = 0
     flags['CF'] = 0
     # variable_type: 0 signed, 1 unsigned
+    register_2 = value_get_key(instruction[0], mapping)
+    value_1 = int(str(registers['eax']), 16)
+    value_2 = int(str(registers[register_2]), 16)
     if operator_2 is not None:
-        value_1 = int(str(registers['eax']), 16)
-        register_2 = value_get_key(instruction[0], mapping)
-        value_2 = int(str(registers[register_2]), 16)
         register_3 = value_get_key(instruction[1], mapping)
         value_3 = int(str(registers[register_3]), 16)
         if variable_type == 1:
-            value_1 = value_1 & 0xFF
-            value_2 = value_2 & 0xFF
-            value_3 = value_3 & 0xFF
-        result = eval(f"{value_1} {operator_1} {value_2} {operator_2} {value_3}")
+            value_1 &= 0xFF
+            value_2 &= 0xFF
+            value_3 &= 0xFF
+        else:
+            value_1 = (value_1 + 0x80) % 0x100 - 0x80
+            value_2 = (value_2 + 0x80) % 0x100 - 0x80
+            value_3 = (value_3 + 0x80) % 0x100 - 0x80
+        if operator_1 == '+':
+            result = value_1 + value_2
+        elif operator_1 == '-':
+            result = value_1 - value_2
+        elif operator_1 == '*':
+            result = value_1 * value_2
+        elif operator_1 == '//':
+            result = value_1 // value_2
+        if operator_2 == '+':
+            result = result + value_3
+        elif operator_2 == '-':
+            result = result - value_3
+        elif operator_2 == '*':
+            result = result * value_3
+        elif operator_2 == '//':
+            result = result // value_3
     else:
-        value_1 = int(str(registers['eax']), 16)
-        register_2 = value_get_key(instruction[0], mapping)
-        value_2 = int(str(registers[register_2]), 16)
         if variable_type == 1:
-            value_1 = value_1 & 0xFF
-            value_2 = value_2 & 0xFF
-        result = eval(f"{value_1} {operator_1} {value_2}")
+            value_1 &= 0xFF
+            value_2 &= 0xFF
+        else:
+            value_1 = (value_1 + 0x80) % 0x100 - 0x80
+            value_2 = (value_2 + 0x80) % 0x100 - 0x80
+
+        if operator_1 == '+':
+            result = value_1 + value_2
+        elif operator_1 == '-':
+            result = value_1 - value_2
+        elif operator_1 == '*':
+            result = value_1 * value_2
+        elif operator_1 == '//':
+            result = value_1 // value_2
     # Flags
     flags['SF'] = int(result < 0)
     if variable_type == 0:
@@ -1056,8 +1101,9 @@ def operations(operator_1, operator_2, instruction, variable_type):
         flags['OF'] = int(result > max_value or result < min_value)
     flags['ZF'] = int(result == 0)
     flags['CF'] = int(result > 255)
-    if result < 0:
-        result = (1 << 8) + result
+    if variable_type == 1:
+        if result < 0:
+            result = (1 << 8) + result
     result = format(result, '02x')
     return result
 
