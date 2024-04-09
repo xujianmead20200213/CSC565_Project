@@ -4,50 +4,56 @@ import csv
 import re
 
 
+# # High Level Code
+# hlc = """
+# unsigned a b c
+# signed x y z
+# a = 3
+# b = 15 + a
+# c = b * a / 10
+# x = -5
+# y = 13
+# if c > 10
+#     print a
+#     print b
+#     print c
+#     x = y + 10
+#     print x
+#     print y
+# else
+#     x = y - 20
+#     print x
+#     print y
+#
+# while y > 0
+#     print y
+#     print \\n
+#     print x
+#     print \\n
+#     y = y - 1
+# """
+
+
 # High Level Code
 hlc = """
 unsigned a b c
-signed x y z
-a = 3
-b = 15 + a
-c = b * a / 10
-x = -5
-y = 13
-if c == 10
-    x = y + 10
-    print x
-    print y
-else
-    x = y - 20
-    print x
-    print y
-
-while y > 0
-    print y
-    print \\n
-    print x
-    print \\n
-    y = y - 1
+signed x y
+a = 252
+b = 1
+c = 255
+x = -10
+y = 1
+while x < 0
+       print x
+       print \\n
+       x = x + y
+while a > 1
+       print a
+       print c
+       print \\n
+       a = a + b
+       c = c + b
 """
-
-
-# # High Level Code
-# hlc = """
-# unsigned a b
-# signed x y
-# a = 10
-# b = 2
-# x = -10
-# y = 1
-# while x < 0
-#        print x
-#        print \\n
-#        x = x + y
-# while a > 0
-#        print a
-#        print \\n
-#        a = a - b
-# """
 
 # Define an array with unsigned elements
 # unsigned_array = {'a': ctypes.c_uint8(0), 'b': ctypes.c_uint8(0), 'c': ctypes.c_uint8(0)}
