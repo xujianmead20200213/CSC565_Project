@@ -1142,7 +1142,7 @@ def operations(operator_1, operator_2, instruction, variable_type):
 parse_hlc_code(hlc)
 process_memory_instruction(memory)
 # Write into CSV path
-csv_file_path = 'C:/Users/DELL/Desktop/CSC565/Project/HLC-program.csv'
+csv_file_path = 'HLC-program.csv'
 with open(csv_file_path, 'w', newline='') as csvfile:
     csv_writer = csv.writer(csvfile)
     for row in HLC_program:
@@ -1151,7 +1151,7 @@ print("HLC CSV file have been created")
 
 
 # Write into CSV path
-memory_csv_file_path = 'C:/Users/DELL/Desktop/CSC565/Project/memory.csv'
+memory_csv_file_path = 'memory.csv'
 with open(memory_csv_file_path, 'w', newline='') as file:
     writer = csv.writer(file)
     for i in range(0, len(memory), 16):
